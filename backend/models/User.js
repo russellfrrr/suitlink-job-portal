@@ -25,17 +25,14 @@ const userSchema = new mongoose.Schema({
     enum: ['applicant', 'employer', 'admin'],
     default: 'applicant',
   },
-  isActive: {
-    type: Boolean,
-    default: false,
+  accStatus: {  
+    type: String,
+    enum: ['active', 'suspended', 'banned', 'deactivated'],
+    default: active,
   },
   isVerified: {
     type: Boolean,
     default: false
-  },
-  createdAt: {
-    type: Date, 
-    default: Date.now,
   },
   lastLoginAt: {
     type: Date,
