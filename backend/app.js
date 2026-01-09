@@ -11,6 +11,9 @@ app.use(morgan('dev'));
 
 db();
 
+api.use('/api/v1/auth/', authRouter);
+
+
 app.get('/', (req, res) => {
   res.send('Welcome to SuitLink API!')
 })
