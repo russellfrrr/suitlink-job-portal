@@ -28,11 +28,21 @@ const userSchema = new mongoose.Schema({
   accStatus: {  
     type: String,
     enum: ['active', 'suspended', 'banned', 'deactivated'],
-    default: active,
+    default: 'active',
   },
-  isVerified: {
+  isEmailVerified: {
     type: Boolean,
     default: false
+  },
+  emailVerificationCode: {
+    type: String,
+    select: false,
+  },
+  emailVerificationExpires: {
+    type: Date,
+  },
+  emailVerifiedAt: {
+    type: Date,
   },
   lastLoginAt: {
     type: Date,
