@@ -120,3 +120,11 @@ const logout = async (req, res) => {
 
     res.status(200).json(responseObj); 
 }
+
+export {
+  register,
+  verifyEmail,
+  resendVerification,
+  login,
+  logout
+};
