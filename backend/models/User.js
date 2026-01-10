@@ -51,14 +51,13 @@ const userSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Password Hashing
-userSchema.pre('save', async function (next) {
+userSchema.pre('save', async function () {
   if (!this.isModified('passwordHash')) {
-    return next();
+    return;
   }
 
   const salt = await bcrypt.genSalt(13);
   this.passwordHash = await bcrypt.hash(this.passwordHash, salt);
-  next();
 })
 
 //Password Comparison

@@ -9,9 +9,10 @@ import db from './database/db.js';
 
 import authRouter from './routes/auth.routes.js';
 
+dotenv.config();
 const app = express();
 
-db();
+db(); 
 
 app.use(express.json());
 app.use(morgan('dev'));
