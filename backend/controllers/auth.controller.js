@@ -1,5 +1,5 @@
 import AuthService from "../services/auth.service.js";
-import { sendVerificationEmail } from "../services/mail.service.js";
+import { sendForgotPasswordCode, sendVerificationEmail } from "../services/mail.service.js";
 
 /* 
   ENDPOINTS:
@@ -8,14 +8,18 @@ import { sendVerificationEmail } from "../services/mail.service.js";
   POST /resend-verification
   POST /login
   POST /logout
+  POST /forgot-password
+  POST /reset-password
+  POST /resend-reset-password
 */
 
+// POST /register
 const register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    const { userId, verificationCode } = await AuthService.register(name, email, password);
-    await sendVerificationEmail(email, verificationCode);
+    const { code } = await AuthService.register(name, email, password);
+    await sendVerificationEmail(email, code);
 
     const responseObj = {
       success: true,
@@ -27,10 +31,11 @@ const register = async (req, res) => {
     res.status(400).json({
       success: false,
       message: err.message,
-    })
+    });
   }
 }
 
+// POST /verify-email
 const verifyEmail = async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -42,7 +47,7 @@ const verifyEmail = async (req, res) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       maxAge: 24 * 60 * 60 * 1000,
-    })
+    });
 
     const responseObj = {
       success: true,
@@ -54,16 +59,17 @@ const verifyEmail = async (req, res) => {
     res.status(400).json({
       success: false,
       message: err.message,
-    })
+    });
   }
 }
 
+// POST /resend-verification
 const resendVerification = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const { verificationCode } = await AuthService.resendVerification(email);
-    await sendVerificationEmail(email, verificationCode);
+    const { code } = await AuthService.resendVerification(email);
+    await sendVerificationEmail(email, code);
 
     const responseObj = {
       success: true,
@@ -71,26 +77,25 @@ const resendVerification = async (req, res) => {
     };
 
     res.status(200).json(responseObj);
-
-
   } catch (err) {
     res.status(400).json({
       success: false,
       message: err.message
-    })
+    });
   }
 }
 
+// POST /login
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const { user, token } = await AuthService.login(email, password);
+    const { token } = await AuthService.login(email, password);
 
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    })
+    });
 
     const responseObj = {
       success: true,
@@ -102,10 +107,11 @@ const login = async (req, res) => {
     res.status(400).json({
       success: false,
       message: err.message,
-    })
+    });
   }
 }
 
+// POST /logout
 const logout = async (req, res) => {
     res.clearCookie('token', {
       httpOnly: true,
@@ -121,10 +127,79 @@ const logout = async (req, res) => {
     res.status(200).json(responseObj); 
 }
 
+// POST /forgot-password
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const { code } = await AuthService.forgotPassword(email);
+    await sendForgotPasswordCode(email, code);
+
+    const responseObj = {
+      success: true,
+      message: 'Password reset code sent to your email.',
+    };
+
+    res.status(200).json(responseObj);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+// POST /reset-password
+const resetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    await AuthService.resetPassword(email, code, newPassword);
+
+    const responseObj = {
+      success: true,
+      message: 'Password reset successfully.',
+    };
+
+    res.status(200).json(responseObj);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+// POST /resend-reset-password
+const resendResetPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const { code } = await AuthService.resendResetPasswordCode(email);
+    await sendForgotPasswordCode(email, code);
+
+    const responseObj = {
+      success: true, 
+      message: 'Password reset code resent. Please check your email.',
+    };
+
+    res.status(200).json(responseObj);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+
 export {
   register,
   verifyEmail,
   resendVerification,
   login,
-  logout
+  logout,
+  forgotPassword,
+  resetPassword,
+  resendResetPassword
 };
