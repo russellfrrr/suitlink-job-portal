@@ -41,12 +41,20 @@ const userSchema = new mongoose.Schema({
   emailVerificationExpires: {
     type: Date,
   },
+  emailVerificationAttempts: {
+    type: Number,
+    default: 0,
+  },
   forgotPasswordCode: {
     type: String,
     select: false,
   },
-  forgoPasswordExpires: {
+  forgotPasswordExpires: {
     type: Date,
+  },
+  forgotPasswordAttempts: {
+    type: Number,
+    default: 0,
   },
   emailVerifiedAt: {
     type: Date,

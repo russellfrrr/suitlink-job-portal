@@ -52,6 +52,7 @@ class AuthService {
     user.emailVerifiedAt = new Date();
     user.emailVerificationCode = undefined;
     user.emailVerificationExpires = undefined;
+    user.emailVerificationAttempts = 0;
     await user.save();
 
     const token = generateToken(user._id);
@@ -70,14 +71,19 @@ class AuthService {
       throw new Error('Email already verified!');
     }
 
-    if (user.emailVerificationExpires && user.emailVerificationExpires > Date.now()) {
-      throw new Error('Please wait before requesting another verification code.');
+    if (user.emailVerificationExpires && user.emailVerificationExpires < Date.now()) {
+      user.emailVerificationAttempts = 0;
+    }
+
+    if (user.emailVerificationAttempts >= 3) {
+      throw new Error('Too many requests. Please wait for the code to expire.');
     }
 
     const { code, expiryTime } = verificationCode();
 
     user.emailVerificationCode = code;
     user.emailVerificationExpires = expiryTime;
+    user.emailVerificationAttempts += 1;
     await user.save();
 
     return { email: user.email, code };
@@ -119,14 +125,20 @@ class AuthService {
       throw new Error('User not found!');
     }
 
-    if (user.forgotPasswordExpires && user.forgotPasswordExpires > Date.now()) {
-      throw new Error('Please wait before requesting another reset code.');
+    if (user.forgotPasswordExpires && user.forgotPasswordExpires < Date.now()) {
+      user.forgotPasswordAttempts = 0;
+    }
+
+    if (user.forgotPasswordAttempts >= 3) {
+      throw new Error('Too many requests. Please wait before requesting another reset code.');
     }
 
     const { code, expiryTime } = verificationCode();
 
     user.forgotPasswordCode = code;
     user.forgotPasswordExpires = expiryTime;
+    user.forgotPasswordAttempts += 1;
+
 
     await user.save();
 
@@ -157,6 +169,7 @@ class AuthService {
 
     user.forgotPasswordCode = undefined;
     user.forgotPasswordExpires = undefined;
+    user.forgotPasswordAttempts = 0;
 
     await user.save();
 
@@ -174,14 +187,19 @@ class AuthService {
       throw new Error('User not found!');
     }
 
-    if (user.forgotPasswordExpires && user.forgotPasswordExpires > Date.now()) {
-      throw new Error('Please wait before requesting another reset code.');
+    if (user.forgotPasswordExpires && user.forgotPasswordExpires < Date.now()) {
+      user.forgotPasswordAttempts = 0;
+    }
+
+    if (user.forgotPasswordAttempts >= 3) {
+      throw new Error('Too many requests. Please wait for the reset code to expire.');
     }
 
     const { code, expiryTime } = verificationCode();
 
     user.forgotPasswordCode = code;
     user.forgotPasswordExpires = expiryTime;
+    user.forgotPasswordAttempts += 1;
 
     await user.save();
 
