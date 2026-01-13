@@ -22,3 +22,158 @@ ENDPOINTS (/api/v1/applicant/)
     POST /resume
     DELETE /resume/:resumeId    
 */
+
+class ApplicantProfileService {
+  
+  // POST /profile
+  static async createProfile(userId, payload) {
+    const exists = await ApplicantProfile.findOne({ user: userId });
+
+    if (exists) {
+      throw new Error('Applicant profile already exists.');
+    };
+
+    const profile = await ApplicantProfile.create({
+      user: userId,
+      ...payload
+    });
+
+    return profile;
+  }
+
+  // GET /profile
+  static async getProfile(userId) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    };
+
+    return profile;
+  }
+
+  // PATCH /profile
+  static async updateProfile(userId, payload) {
+    if ('user' in payload) {
+      delete payload.user;
+    }
+
+    const profile = await ApplicantProfile.findOneAndUpdate({ user: userId }, { $set: payload }, { new: true });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    };
+
+    return profile;
+  }
+
+  // POST /education
+  static async addEducation(userId, educationData) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    }
+
+    profile.education.push(educationData);
+    await profile.save();
+
+    return profile.education;
+  }
+
+  // PATCH /education/:educationId
+  static async updateEducation(userId, educationId, updateData) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    }
+
+    const education = profile.education.id(educationId);
+    
+    if (!education) {
+      throw new Error('Education entry not found.');
+    }
+
+    Object.assign(education, updateData);
+    await profile.save();
+
+    return education;
+  }
+
+  // DELETE /education/educationId
+  static async deleteEducation(userId, educationId) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    }
+
+    const education = profile.education.id(educationId);
+
+    if (!education) {
+      throw new Error('Education entry not found.');
+    }
+
+    education.deleteOne();
+    await profile.save();
+
+    return profile.education;
+  }
+
+  // POST /experience
+  static async addExperience(userId, experienceData) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    };
+
+    profile.experience.push(experienceData);
+    await profile.save();
+
+    return profile.experience;
+  }
+
+  // PATCH /experience/:experienceId
+  static async updateExperience(userId, experienceId, updateData) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    }
+
+    const experience = profile.experience.id(experienceId);
+
+    if (!experience) {
+      throw new Error('Experience entry not found.');
+    };
+
+    Object.assign(experience, updateData);
+    await profile.save();
+
+    return experience;
+  }
+
+  // DELETE /experience/:experienceId
+  static async deleteExperience(userId, experienceId) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    }
+
+    const experience = profile.experience.id(experienceId);
+
+    if (!experience) {
+      throw new Error('Experience entry not found.');
+    }
+
+    experience.deleteOne();
+    await profile.save();
+
+    return profile.experience;
+  }
+}
+
+export default ApplicantProfileService;
