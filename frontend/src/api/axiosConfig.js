@@ -3,7 +3,7 @@ import axios from "axios";
 const API_BASE_URL = "http://localhost:8888/api/v1/auth";
 
 // Axios instance with default config
-const authApi = axios.create({
+const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
@@ -12,10 +12,12 @@ const authApi = axios.create({
 });
 
 // Response interceptor error handler
-authApi.interceptors.response.use(
+api.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const message = error.response?.data?.message || "An error occurred";
     throw new Error(message);
   }
 );
+
+export default api;
