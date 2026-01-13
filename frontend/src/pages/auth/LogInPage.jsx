@@ -1,14 +1,30 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Briefcase, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { authService } from "../../services/authService";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Login with:", { email, password });
+    setError("");
+    setLoading(true);
+
+    try {
+      await authService.login(email, password);
+      // Successful login - redirect to dashboard (or wherever)
+      navigate("/dashboard"); // Update this to your actual dashboard route
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -18,7 +34,7 @@ const LoginPage = () => {
         <div className="w-full max-w-md">
           {/* Logo */}
           <button
-            onClick={() => console.log("Back to home")}
+            onClick={() => navigate("/")}
             className="inline-flex items-center gap-2 mb-8 text-foreground hover:opacity-80 transition-opacity"
           >
             <Briefcase className="w-5 h-5" style={{ color: "#047857" }} />
@@ -33,7 +49,7 @@ const LoginPage = () => {
             <p className="text-sm text-muted-foreground font-normal">
               Don't have an account?{" "}
               <button
-                onClick={() => console.log("Switch to signup")}
+                onClick={() => navigate("/signup")}
                 className="font-normal hover:opacity-80 transition-opacity underline"
                 style={{ color: "#047857" }}
               >
@@ -41,6 +57,13 @@ const LoginPage = () => {
               </button>
             </p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
           {/* Login Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -61,6 +84,7 @@ const LoginPage = () => {
                 className="w-full px-3.5 py-2.5 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                 autoComplete="email"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -82,11 +106,13 @@ const LoginPage = () => {
                   className="w-full px-3.5 py-2.5 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                   autoComplete="current-password"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={loading}
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -101,9 +127,10 @@ const LoginPage = () => {
             <div className="flex justify-end">
               <button
                 type="button"
-                onClick={() => console.log("Forgot password")}
+                onClick={() => navigate("/forgot-password")}
                 className="text-sm font-normal hover:opacity-80 transition-opacity"
                 style={{ color: "#047857" }}
+                disabled={loading}
               >
                 Forgot password?
               </button>
@@ -112,10 +139,11 @@ const LoginPage = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full text-white py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+              disabled={loading}
+              className="w-full text-white py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#047857" }}
             >
-              Sign in
+              {loading ? "Signing in..." : "Sign in"}
             </button>
 
             {/* Divider */}
@@ -144,6 +172,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 className="w-full flex items-center justify-center gap-2.5 py-2.5 border border-border rounded-lg hover:bg-accent transition-colors text-sm font-normal"
+                disabled={loading}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
@@ -169,6 +198,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 className="w-full flex items-center justify-center gap-2.5 py-2.5 border border-border rounded-lg hover:bg-accent transition-colors text-sm font-normal"
+                disabled={loading}
               >
                 <svg className="w-4 h-4" fill="#1877F2" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -185,11 +215,10 @@ const LoginPage = () => {
         className="hidden lg:flex w-full lg:w-1/2 p-8 lg:p-12 items-center justify-center relative overflow-hidden min-h-[500px] lg:min-h-screen"
         style={{ backgroundColor: "#065f46" }}
       >
-        {/* Background Image with Overlay */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-60"
+          className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
-            backgroundImage: `url('https://plus.unsplash.com/premium_photo-1661376664649-821d586ef9f0?q=80&w=687&auto=format&fit=crop')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')`,
           }}
         />
         <div
@@ -201,7 +230,6 @@ const LoginPage = () => {
         />
 
         <div className="relative z-10 max-w-md">
-          {/* Feature Card - Translucent Design */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
             <h3 className="text-2xl font-medium text-white mb-4">
               Find your perfect career match
