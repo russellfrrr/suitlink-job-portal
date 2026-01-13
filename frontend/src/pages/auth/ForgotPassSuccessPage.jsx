@@ -1,7 +1,7 @@
-import { Briefcase, CheckCircle, ArrowRight } from "lucide-react";
+import { Briefcase, CheckCircle, ArrowLeft } from "lucide-react";
 
-const VerifiedEmailPage = ({
-  onContinue,
+const ForgotPassSuccessPage = ({
+  onBackToLogin,
   onBackToHome,
   userEmail = "user@example.com",
 }) => {
@@ -33,29 +33,29 @@ const VerifiedEmailPage = ({
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl mb-3 font-medium text-gray-900">
-              Email verified!
+              Password reset successful!
             </h1>
             <p className="text-gray-600 leading-relaxed">
-              Your email address{" "}
-              <span className="text-gray-900 font-medium">{userEmail}</span> has
-              been successfully verified. You can now access all features of
-              your SuitLink account.
+              Your password has been successfully reset. You can now sign in
+              with your new password using the email address{" "}
+              <span className="text-gray-900 font-medium">{userEmail}</span>.
             </p>
           </div>
 
-          {/* Continue Button */}
+          {/* Back to Sign In Button */}
           <button
-            onClick={onContinue}
+            type="button"
+            onClick={onBackToLogin}
             className="w-full bg-emerald-700 text-white py-3 rounded-lg hover:bg-emerald-800 transition-colors flex items-center justify-center gap-2 group mb-6 font-medium"
           >
-            <span>Continue to dashboard</span>
-            <ArrowRight className="size-5 group-hover:translate-x-1 transition-transform" />
+            <ArrowLeft className="size-5 transition-transform group-hover:-translate-x-1" />
+            <span>Back to sign in</span>
           </button>
 
-          {/* Feature List */}
+          {/* Security Tips */}
           <div className="mt-12 p-6 bg-gray-50 rounded-xl border border-gray-200 text-left">
             <h3 className="text-sm text-gray-900 mb-4 font-medium">
-              What's next?
+              Security tips
             </h3>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
@@ -64,10 +64,11 @@ const VerifiedEmailPage = ({
                 </div>
                 <div>
                   <div className="text-sm text-gray-900 font-medium">
-                    Complete your profile
+                    Use a strong password
                   </div>
                   <div className="text-xs text-gray-600">
-                    Add your skills and experience
+                    Include uppercase, lowercase, numbers, and special
+                    characters
                   </div>
                 </div>
               </div>
@@ -77,10 +78,10 @@ const VerifiedEmailPage = ({
                 </div>
                 <div>
                   <div className="text-sm text-gray-900 font-medium">
-                    Browse job listings
+                    Don't share your password
                   </div>
                   <div className="text-xs text-gray-600">
-                    Discover opportunities that match your skills
+                    Keep your password private and never share it with anyone
                   </div>
                 </div>
               </div>
@@ -90,10 +91,10 @@ const VerifiedEmailPage = ({
                 </div>
                 <div>
                   <div className="text-sm text-gray-900 font-medium">
-                    Track applications
+                    Enable two-factor authentication
                   </div>
                   <div className="text-xs text-gray-600">
-                    Monitor your application status in real-time
+                    Add an extra layer of security to your account
                   </div>
                 </div>
               </div>
@@ -117,12 +118,12 @@ const VerifiedEmailPage = ({
           {/* Feature Card - Translucent Design */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
             <h3 className="text-2xl text-white mb-4 font-medium">
-              Welcome to transparent hiring
+              Your account security matters
             </h3>
             <p className="text-white/80 mb-6 leading-relaxed">
-              You're now part of a platform that values fairness,
-              accountability, and meaningful connections between job seekers and
-              employers.
+              We take your security seriously. Your password has been reset
+              securely, and your account is now protected with your new
+              credentials.
             </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3">
@@ -130,7 +131,7 @@ const VerifiedEmailPage = ({
                   <CheckCircle className="size-4 text-white" />
                 </div>
                 <span className="text-white/90 text-sm">
-                  Your data is protected
+                  Secure password reset
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -138,7 +139,7 @@ const VerifiedEmailPage = ({
                   <CheckCircle className="size-4 text-white" />
                 </div>
                 <span className="text-white/90 text-sm">
-                  Full application visibility
+                  Encrypted account data
                 </span>
               </div>
               <div className="flex items-center gap-3">
@@ -146,7 +147,7 @@ const VerifiedEmailPage = ({
                   <CheckCircle className="size-4 text-white" />
                 </div>
                 <span className="text-white/90 text-sm">
-                  Skill-based matching
+                  Protected personal information
                 </span>
               </div>
             </div>
@@ -177,4 +178,4 @@ const VerifiedEmailPage = ({
   );
 };
 
-export default VerifiedEmailPage;
+export default ForgotPassSuccessPage;
