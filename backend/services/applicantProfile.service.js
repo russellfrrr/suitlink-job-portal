@@ -1,4 +1,5 @@
 import ApplicantProfile from "../models/ApplicantProfile.js";
+import cloudinary from '../config/cloudinary.js';
 
 /* 
 ENDPOINTS (/api/v1/applicant/)
@@ -173,6 +174,61 @@ class ApplicantProfileService {
     await profile.save();
 
     return profile.experience;
+  }
+
+  // POST /resume
+  static async uploadResume(userId, file) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'raw',
+          folder: 'resumes'
+        },
+        (err, res) => {
+          if (err) reject(err);
+          resolve(res);
+        }
+      ).end(file.buffer);
+    });
+
+    profile.resumes.push({
+      fileName: file.originalname,
+      fileUrl: result.secure_url,
+      publicId: result.public_id,
+    });
+
+    await profile.save();
+    return profile.resumes;
+  }
+
+  // DELETE /resume/:resumeId
+  static async deleteResume(userId, resumeId) {
+    const profile = await ApplicantProfile.findOne({ user: userId });
+
+    if (!profile) {
+      throw new Error('Applicant profile not found.');
+    }
+
+    const resume = profile.resumes.id(resumeId);
+    
+    if (!resume) {
+      throw new Error('Resume not found.');
+    }
+
+    await cloudinary.uploader.destroy(resume.publicId, {
+      resource_type: 'raw'
+    });
+
+    resume.deleteOne();
+    await profile.save();
+
+    return profile.resumes;
   }
 }
 

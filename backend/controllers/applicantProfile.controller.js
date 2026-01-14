@@ -221,3 +221,49 @@ const deleteExperience = async (req, res) => {
     });
   }
 }
+
+// POST /resume
+const uploadResume = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if(!req.file) {
+      throw new Error('Resume file is required.');
+    }
+
+    const resumes = await ApplicantProfileService.uploadResume(userId, req.file);
+
+    const responseObj = {
+      success: true,
+      data: resumes,
+    };
+
+    res.status(201).json(responseObj);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
+
+const deleteResume = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { resumeId } = req.params;
+
+    const resumes = await ApplicantProfileService.deleteResume(userId, resumeId);
+
+    const responseObj = {
+      success: true,
+      data: resumes,
+    };
+
+    res.status(200).json(responseObj);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message,
+    });
+  }
+}
