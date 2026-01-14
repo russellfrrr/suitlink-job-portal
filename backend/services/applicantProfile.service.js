@@ -11,7 +11,7 @@ ENDPOINTS (/api/v1/applicant/)
   EDUCATION (subdocument)
     POST /education 
     PATCH /education/:educationId
-    DELETE /educattion/:educationId
+    DELETE /education/:educationId
 
   EXPERIENCE (subdocument)
     POST /experience
