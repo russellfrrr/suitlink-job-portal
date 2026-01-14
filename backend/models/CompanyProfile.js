@@ -10,7 +10,6 @@ const companyProfileSchema = new mongoose.Schema({
   companyName: {
     type: String,
     trim: true,
-    unique: true,
     required: [true, 'Company name required!'],
   },
   description: {
@@ -31,6 +30,7 @@ const companyProfileSchema = new mongoose.Schema({
   credibilityScore: {
     type: Number,
     default: 0,
+    min: 0,
   },
   metrics: {
     jobPostsCount: {
