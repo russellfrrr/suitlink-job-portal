@@ -8,6 +8,7 @@ import cors from 'cors';
 import db from './database/db.js';
 
 import authRouter from './routes/auth.routes.js';
+import companyProfileRouter from './routes/companyProfile.routes.js';
 
 dotenv.config();
 const app = express();
@@ -26,6 +27,7 @@ app.use(cookieParser());
 
 
 app.use('/api/v1/auth/', authRouter);
+app.use('/api/v1/company/', companyProfileRouter);
 
 
 app.get('/', (req, res) => {
