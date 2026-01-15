@@ -1,32 +1,44 @@
-import { useState, useRef } from "react";
-import { Briefcase, Mail, ArrowLeft } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Briefcase, Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { authService } from "../../services/authService";
 
-const VerifyEmailPage = ({
-  email = "user@example.com",
-  onVerify,
-  onResendCode,
-  onBackToHome,
-  onBackToLogin,
-}) => {
+const VerifyEmailPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const email = location.state?.email || "";
+  const fromLogin = location.state?.fromLogin || false;
+  const initialMessage = location.state?.message || "";
+  const initialError = location.state?.error || "";
+
   const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(initialError);
+  const [success, setSuccess] = useState(initialMessage);
+  const [resending, setResending] = useState(false);
   const inputRefsArray = useRef([]);
 
+  // Clear success message after a few seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => setSuccess(""), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
+
   const handleChange = (index, value) => {
-    // Only allow numbers
     if (value && !/^\d$/.test(value)) return;
 
     const newCode = [...code];
     newCode[index] = value;
     setCode(newCode);
 
-    // Move to next input if value is entered
     if (value && index < 5) {
       inputRefsArray.current[index + 1]?.focus();
     }
   };
 
   const handleKeyDown = (index, e) => {
-    // Move to previous input on backspace if current is empty
     if (e.key === "Backspace" && !code[index] && index > 0) {
       inputRefsArray.current[index - 1]?.focus();
     }
@@ -45,64 +57,117 @@ const VerifyEmailPage = ({
     });
     setCode(newCode);
 
-    // Focus the next empty input or the last one
     const nextEmptyIndex = newCode.findIndex((val) => !val);
     const focusIndex = nextEmptyIndex === -1 ? 5 : nextEmptyIndex;
     inputRefsArray.current[focusIndex]?.focus();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const verificationCode = code.join("");
-    if (verificationCode.length === 6) {
-      console.log("Verification code:", verificationCode);
-      onVerify?.();
+
+    if (verificationCode.length !== 6) {
+      setError("Please enter the complete 6-digit code");
+      return;
+    }
+
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      await authService.verifyEmail(email, verificationCode);
+      // Verification successful - redirect to success page
+      navigate("/verify-email-success", { state: { email } });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendCode = async () => {
+    setError("");
+    setSuccess("");
+    setResending(true);
+
+    try {
+      await authService.resendVerification(email);
+      setCode(["", "", "", "", "", ""]);
+      setSuccess("Verification code resent successfully!");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setResending(false);
     }
   };
 
   const isCodeComplete = code.every((digit) => digit !== "");
 
+  // Redirect if no email provided
+  if (!email) {
+    navigate("/signup");
+    return null;
+  }
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
       {/* Left Side - Verification Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 min-h-screen lg:min-h-0">
         <div className="w-full max-w-md">
           {/* Logo */}
           <button
-            onClick={onBackToHome}
-            className="inline-flex items-center gap-2 mb-12 text-gray-700 hover:text-gray-900 transition-colors"
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 mb-8 text-foreground hover:opacity-80 transition-opacity"
           >
-            <Briefcase className="size-6 text-emerald-600" />
-            <span className="text-xl font-medium">SuitLink</span>
+            <Briefcase className="w-5 h-5" style={{ color: "#047857" }} />
+            <span className="text-base font-normal">SuitLink</span>
           </button>
 
           {/* Header */}
-          <div className="mb-8">
+          <div className="mb-6">
             <button
               type="button"
-              onClick={onBackToLogin}
-              className="group inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 hover:underline mb-6 transition-colors"
+              onClick={() => navigate(fromLogin ? "/login" : "/signup")}
+              className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:underline mb-4 transition-colors"
             >
-              <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
-              Back to sign in
+              <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+              {fromLogin ? "Back to sign in" : "Back to sign up"}
             </button>
-            <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
-              <Mail className="size-8 text-emerald-700" />
+            <div
+              className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+              style={{ backgroundColor: "#d1fae5" }}
+            >
+              <Mail className="w-8 h-8" style={{ color: "#047857" }} />
             </div>
-            <h1 className="text-3xl mb-2 font-medium text-gray-900">
+            <h1 className="text-2xl font-normal mb-2 text-foreground">
               Verify your email
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm text-muted-foreground">
               We've sent a 6-digit verification code to{" "}
-              <span className="text-gray-900 font-medium">{email}</span>
+              <span className="text-foreground font-medium">{email}</span>
             </p>
           </div>
 
+          {/* Success Message */}
+          {success && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-sm text-green-600">{success}</p>
+            </div>
+          )}
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
+
           {/* Verification Form */}
-          <div className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             {/* 6-Digit Code Input */}
             <div>
-              <label className="block text-sm mb-3 text-gray-700 font-medium">
+              <label className="block text-sm mb-2 text-foreground font-normal">
                 Enter verification code
               </label>
               <div className="flex gap-2 justify-between">
@@ -117,7 +182,8 @@ const VerifyEmailPage = ({
                     onChange={(e) => handleChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
                     onPaste={handlePaste}
-                    className="w-full aspect-square text-center text-2xl font-medium border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600 text-gray-900 transition-colors"
+                    disabled={loading}
+                    className="w-full aspect-square text-center text-2xl font-medium border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground transition-shadow bg-input-background"
                   />
                 ))}
               </div>
@@ -125,36 +191,42 @@ const VerifyEmailPage = ({
 
             {/* Verify Button */}
             <button
-              onClick={handleSubmit}
-              disabled={!isCodeComplete}
-              className={`w-full py-3 rounded-lg transition-colors font-medium ${
-                isCodeComplete
-                  ? "bg-emerald-700 text-white hover:bg-emerald-800"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
+              type="submit"
+              disabled={!isCodeComplete || loading}
+              className={`w-full py-2.5 rounded-lg transition-opacity text-sm font-medium ${
+                isCodeComplete && !loading
+                  ? "text-white hover:opacity-90"
+                  : "cursor-not-allowed opacity-50"
               }`}
+              style={{ backgroundColor: "#047857" }}
             >
-              Verify Email
+              {loading ? "Verifying..." : "Verify Email"}
             </button>
 
             {/* Resend Code */}
             <div className="text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Didn't receive the code?{" "}
                 <button
                   type="button"
-                  onClick={onResendCode}
-                  className="text-emerald-600 hover:text-emerald-700 transition-colors font-medium"
+                  onClick={handleResendCode}
+                  disabled={resending || loading}
+                  className="hover:opacity-80 transition-opacity font-normal disabled:opacity-50"
+                  style={{ color: "#047857" }}
                 >
-                  Resend
+                  {resending ? "Resending..." : "Resend"}
                 </button>
               </p>
             </div>
-          </div>
+          </form>
 
           {/* Info Box */}
-          <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-            <p className="text-sm text-gray-600">
-              <strong className="text-gray-900 font-medium">
+          <div
+            className="mt-6 p-4 rounded-lg border border-border"
+            style={{ backgroundColor: "#f9fafb" }}
+          >
+            <p className="text-sm text-muted-foreground">
+              <strong className="text-foreground font-medium">
                 Security tip:
               </strong>{" "}
               Never share your verification code with anyone. Our team will
@@ -165,20 +237,27 @@ const VerifyEmailPage = ({
       </div>
 
       {/* Right Side - Marketing Content */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-800 to-emerald-950 p-12 items-center justify-center relative overflow-hidden">
-        {/* Background Image with Overlay */}
+      <div
+        className="hidden lg:flex w-full lg:w-1/2 p-8 lg:p-12 items-center justify-center relative overflow-hidden min-h-[500px] lg:min-h-screen"
+        style={{ backgroundColor: "#065f46" }}
+      >
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1718220216044-006f43e3a9b1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')`,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 to-emerald-950/90" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(6, 95, 70, 0.9) 0%, rgba(4, 47, 46, 0.95) 100%)",
+          }}
+        />
 
         <div className="relative z-10 max-w-md">
-          {/* Feature Card - Translucent Design */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
-            <h3 className="text-2xl text-white mb-4 font-medium">
+            <h3 className="text-2xl font-medium text-white mb-4">
               Secure your account
             </h3>
             <p className="text-white/80 mb-6 leading-relaxed">
@@ -189,19 +268,7 @@ const VerifyEmailPage = ({
             <div className="space-y-3">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg
-                    className="size-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
+                  <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <div className="text-white font-medium mb-1">
@@ -214,19 +281,7 @@ const VerifyEmailPage = ({
               </div>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg
-                    className="size-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                    />
-                  </svg>
+                  <CheckCircle className="w-4 h-4 text-white" />
                 </div>
                 <div>
                   <div className="text-white font-medium mb-1">
