@@ -1,17 +1,38 @@
 import { useState, useRef } from "react";
-import { Briefcase, Mail, ArrowLeft, CheckCircle, Shield } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Briefcase, ArrowLeft, Shield, CheckCircle } from "lucide-react";
+import { authService } from "../../services/authService";
 
-const ForgotPassPage = ({ onBackToLogin, onBackToHome, onVerified }) => {
-  const [step, setStep] = useState("email"); // 'email' or 'verify'
-  const [email, setEmail] = useState("");
+const ForgotPassPage = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get initial state from navigation (if redirected back from reset page)
+  const initialEmail = location.state?.email || "";
+  const initialError = location.state?.error || "";
+
+  const [step, setStep] = useState(initialEmail ? "verify" : "email");
+  const [email, setEmail] = useState(initialEmail);
   const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(initialError);
+  const [resending, setResending] = useState(false);
   const inputRefsArray = useRef([]);
 
   // Email submission handler
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-    console.log("Reset password for:", email);
-    setStep("verify");
+    setError("");
+    setLoading(true);
+
+    try {
+      await authService.forgotPassword(email);
+      setStep("verify");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Code input handlers
@@ -53,62 +74,88 @@ const ForgotPassPage = ({ onBackToLogin, onBackToHome, onVerified }) => {
 
   const handleVerifyCode = () => {
     const verificationCode = code.join("");
-    if (verificationCode.length === 6) {
-      console.log("Verification code:", verificationCode);
-      // Call the onVerified callback to move to reset password page
-      onVerified?.(email, verificationCode);
+    if (verificationCode.length !== 6) {
+      setError("Please enter the complete 6-digit code");
+      return;
     }
+
+    setError("");
+    // Navigate to reset password page with email and code
+    navigate("/reset-password", {
+      state: { email, code: verificationCode },
+    });
   };
 
-  const handleResendCode = () => {
-    console.log("Resending code to:", email);
-    setCode(["", "", "", "", "", ""]);
-    // In real app, trigger API call to resend code
+  const handleResendCode = async () => {
+    setError("");
+    setResending(true);
+
+    try {
+      await authService.resendResetPassword(email);
+      setCode(["", "", "", "", "", ""]);
+      const successMsg = document.createElement("div");
+      successMsg.className =
+        "fixed top-4 right-4 bg-green-50 border border-green-200 rounded-lg p-4 shadow-lg z-50";
+      successMsg.innerHTML = `<p class="text-sm text-green-600">Reset code resent successfully!</p>`;
+      document.body.appendChild(successMsg);
+      setTimeout(() => successMsg.remove(), 3000);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setResending(false);
+    }
   };
 
   const isCodeComplete = code.every((digit) => digit !== "");
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
       {/* Left Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 min-h-screen lg:min-h-0">
         <div className="w-full max-w-md">
           {/* Logo */}
           <button
-            onClick={onBackToHome}
-            className="inline-flex items-center gap-2 mb-12 text-gray-700 hover:text-gray-900 transition-colors"
+            onClick={() => navigate("/login")}
+            className="inline-flex items-center gap-2 mb-8 text-foreground hover:opacity-80 transition-opacity"
           >
-            <Briefcase className="size-6 text-emerald-600" />
-            <span className="text-xl font-medium">SuitLink</span>
+            <Briefcase className="w-5 h-5" style={{ color: "#047857" }} />
+            <span className="text-base font-normal">SuitLink</span>
           </button>
 
           {step === "email" ? (
             <>
               {/* Email Step - Header */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <button
                   type="button"
-                  onClick={onBackToLogin}
-                  className="group inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 hover:underline mb-6 transition-colors"
+                  onClick={() => navigate("/login")}
+                  className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:underline mb-4 transition-colors"
                 >
-                  <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
+                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                   Back to sign in
                 </button>
-                <h1 className="text-3xl mb-2 font-medium text-gray-900">
+                <h1 className="text-2xl mb-2 font-normal text-foreground">
                   Reset password
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   Enter your email address and we'll send you a verification
                   code to reset your password.
                 </p>
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
               {/* Email Step - Form */}
-              <form className="space-y-5" onSubmit={handleEmailSubmit}>
+              <form className="space-y-4" onSubmit={handleEmailSubmit}>
                 <div>
                   <label
                     htmlFor="email"
-                    className="block text-sm mb-2 text-gray-700 font-medium"
+                    className="block text-sm mb-1.5 text-foreground font-normal"
                   >
                     E-mail
                   </label>
@@ -118,24 +165,30 @@ const ForgotPassPage = ({ onBackToLogin, onBackToHome, onVerified }) => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="example@gmail.com"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 text-gray-900 placeholder:text-gray-400 transition-colors"
+                    className="w-full px-3.5 py-2.5 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-sm text-foreground placeholder:text-muted-foreground transition-shadow bg-input-background"
                     autoComplete="email"
                     required
+                    disabled={loading}
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full bg-emerald-700 text-white py-3 rounded-lg hover:bg-emerald-800 transition-colors font-medium"
+                  disabled={loading}
+                  className="w-full text-white py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm font-medium disabled:opacity-50"
+                  style={{ backgroundColor: "#047857" }}
                 >
-                  Send verification code
+                  {loading ? "Sending..." : "Send verification code"}
                 </button>
               </form>
 
               {/* Email Step - Security Info */}
-              <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm text-gray-600">
-                  <strong className="text-gray-900 font-medium">
+              <div
+                className="mt-6 p-4 rounded-lg border border-border"
+                style={{ backgroundColor: "#f9fafb" }}
+              >
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground font-medium">
                     Security tip:
                   </strong>{" "}
                   For your protection, we'll only send reset instructions to the
@@ -146,34 +199,45 @@ const ForgotPassPage = ({ onBackToLogin, onBackToHome, onVerified }) => {
           ) : (
             <>
               {/* Verify Step - Header */}
-              <div className="mb-8">
+              <div className="mb-6">
                 <button
                   type="button"
                   onClick={() => {
                     setStep("email");
                     setCode(["", "", "", "", "", ""]);
+                    setError("");
                   }}
-                  className="group inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 hover:underline mb-6 transition-colors"
+                  className="group inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground hover:underline mb-4 transition-colors"
                 >
-                  <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
+                  <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
                   Change your email
                 </button>
-                <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mb-6">
-                  <Shield className="size-8 text-emerald-700" />
+                <div
+                  className="w-16 h-16 rounded-full flex items-center justify-center mb-4"
+                  style={{ backgroundColor: "#d1fae5" }}
+                >
+                  <Shield className="w-8 h-8" style={{ color: "#047857" }} />
                 </div>
-                <h1 className="text-3xl mb-2 font-medium text-gray-900">
+                <h1 className="text-2xl mb-2 font-normal text-foreground">
                   Enter verification code
                 </h1>
-                <p className="text-gray-600">
+                <p className="text-sm text-muted-foreground">
                   We've sent a 6-digit verification code to{" "}
-                  <span className="text-gray-900 font-medium">{email}</span>
+                  <span className="text-foreground font-medium">{email}</span>
                 </p>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
 
               {/* Verify Step - Code Input */}
               <div className="space-y-6">
                 <div>
-                  <label className="block text-sm mb-3 text-gray-700 font-medium">
+                  <label className="block text-sm mb-2 text-foreground font-normal">
                     Enter verification code
                   </label>
                   <div className="flex gap-2 justify-between">
@@ -188,7 +252,8 @@ const ForgotPassPage = ({ onBackToLogin, onBackToHome, onVerified }) => {
                         onChange={(e) => handleChange(index, e.target.value)}
                         onKeyDown={(e) => handleKeyDown(index, e)}
                         onPaste={handlePaste}
-                        className="w-full aspect-square text-center text-2xl font-medium border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600 text-gray-900 transition-colors"
+                        disabled={loading}
+                        className="w-full aspect-square text-center text-2xl font-medium border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-ring text-foreground transition-shadow bg-input-background"
                       />
                     ))}
                   </div>
@@ -196,37 +261,43 @@ const ForgotPassPage = ({ onBackToLogin, onBackToHome, onVerified }) => {
 
                 <button
                   onClick={handleVerifyCode}
-                  disabled={!isCodeComplete}
-                  className={`w-full py-3 rounded-lg transition-colors font-medium ${
-                    isCodeComplete
-                      ? "bg-emerald-700 text-white hover:bg-emerald-800"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  disabled={!isCodeComplete || loading}
+                  className={`w-full py-2.5 rounded-lg transition-opacity text-sm font-medium ${
+                    isCodeComplete && !loading
+                      ? "text-white hover:opacity-90"
+                      : "cursor-not-allowed opacity-50"
                   }`}
+                  style={{ backgroundColor: "#047857" }}
                 >
-                  Verify Code
+                  Continue
                 </button>
 
                 <div className="text-center">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     Didn't receive the code?{" "}
                     <button
                       type="button"
                       onClick={handleResendCode}
-                      className="text-emerald-600 hover:text-emerald-700 transition-colors font-medium"
+                      disabled={resending || loading}
+                      className="hover:opacity-80 transition-opacity font-normal disabled:opacity-50"
+                      style={{ color: "#047857" }}
                     >
-                      Resend
+                      {resending ? "Resending..." : "Resend"}
                     </button>
                   </p>
                 </div>
               </div>
 
               {/* Verify Step - Security Info */}
-              <div className="mt-8 p-4 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-sm text-gray-600">
-                  <strong className="text-gray-900 font-medium">
+              <div
+                className="mt-6 p-4 rounded-lg border border-border"
+                style={{ backgroundColor: "#f9fafb" }}
+              >
+                <p className="text-sm text-muted-foreground">
+                  <strong className="text-foreground font-medium">
                     Security tip:
                   </strong>{" "}
-                  This code will expire in 10 minutes. Never share it with
+                  This code will expire in 15 minutes. Never share it with
                   anyone, even SuitLink support staff.
                 </p>
               </div>
@@ -236,92 +307,59 @@ const ForgotPassPage = ({ onBackToLogin, onBackToHome, onVerified }) => {
       </div>
 
       {/* Right Side - Marketing Content */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-800 to-emerald-950 p-12 items-center justify-center relative overflow-hidden">
+      <div
+        className="hidden lg:flex w-full lg:w-1/2 p-8 lg:p-12 items-center justify-center relative overflow-hidden min-h-[500px] lg:min-h-screen"
+        style={{ backgroundColor: "#065f46" }}
+      >
         <div
           className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1758518730384-be3d205838e8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=1080')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')`,
           }}
         />
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/90 to-emerald-950/90" />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(6, 95, 70, 0.9) 0%, rgba(4, 47, 46, 0.95) 100%)",
+          }}
+        />
 
         <div className="relative z-10 max-w-md">
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
-            {step === "email" ? (
-              <>
-                <h3 className="text-2xl text-white mb-4 font-medium">
-                  Your account security matters
-                </h3>
-                <p className="text-white/80 mb-6 leading-relaxed">
-                  We take your security seriously. Our password reset process
-                  ensures only you can access your account and application data.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="size-4 text-white" />
-                    </div>
-                    <span className="text-white/90 text-sm">
-                      Secure password recovery
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="size-4 text-white" />
-                    </div>
-                    <span className="text-white/90 text-sm">
-                      Protected account data
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle className="size-4 text-white" />
-                    </div>
-                    <span className="text-white/90 text-sm">
-                      Email verification required
-                    </span>
-                  </div>
+            <h3 className="text-2xl text-white mb-4 font-medium">
+              Your account security matters
+            </h3>
+            <p className="text-white/80 mb-6 leading-relaxed">
+              We take your security seriously. Our password reset process
+              ensures only you can access your account and application data.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-white" />
                 </div>
-              </>
-            ) : (
-              <>
-                <h3 className="text-2xl text-white mb-4 font-medium">
-                  Reset your password securely
-                </h3>
-                <p className="text-white/80 mb-6 leading-relaxed">
-                  We use industry-standard verification to ensure only you can
-                  reset your password and access your account.
-                </p>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <CheckCircle className="size-4 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-white font-medium mb-1">
-                        Two-factor verification
-                      </div>
-                      <div className="text-white/80 text-sm">
-                        Email code ensures account ownership
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0 mt-0.5">
-                      <CheckCircle className="size-4 text-white" />
-                    </div>
-                    <div>
-                      <div className="text-white font-medium mb-1">
-                        Time-limited codes
-                      </div>
-                      <div className="text-white/80 text-sm">
-                        Codes expire for added security
-                      </div>
-                    </div>
-                  </div>
+                <span className="text-white/90 text-sm">
+                  Secure password recovery
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-white" />
                 </div>
-              </>
-            )}
+                <span className="text-white/90 text-sm">
+                  Protected account data
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-white/90 text-sm">
+                  Email verification required
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
