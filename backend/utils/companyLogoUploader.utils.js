@@ -1,4 +1,4 @@
-import cloudinary from '../config/cloudinary.config.js';
+import cloudinary from '../config/cloudinaryCompany.config.js';
 
 export const uploadCompanyLogo = async (fileBuffer) => {
   return new Promise((resolve, reject) => {
