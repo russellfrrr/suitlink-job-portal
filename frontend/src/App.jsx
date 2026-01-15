@@ -8,32 +8,33 @@ import ForgotPassPage from "./pages/auth/ForgotPassPage";
 import ForgotPassSuccessPage from "./pages/auth/ForgotPassSuccessPage";
 import ResetPassPage from "./pages/auth/ResetPassPage";
 import LandingPage from "./pages/landingPage/LandingPage";
+import EmployerDashboardPage from "./pages/dashboard/EmployerDashboardPage";
 
-// Placeholder Dashboard component
-const DashboardPlaceholder = () => {
-  React.useEffect(() => {
-    console.log("Dashboard page - Coming soon!");
-  }, []);
+// // Placeholder Dashboard component
+// const DashboardPlaceholder = () => {
+//   React.useEffect(() => {
+//     console.log("Dashboard page - Coming soon!");
+//   }, []);
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-foreground mb-4">
-          Dashboard Coming Soon
-        </h1>
-        <p className="text-muted-foreground mb-8">
-          This page is under construction
-        </p>
-        <button
-          onClick={() => (window.location.href = "/login")}
-          className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
-        >
-          Back to Login
-        </button>
-      </div>
-    </div>
-  );
-};
+//   return (
+//     <div className="min-h-screen flex items-center justify-center bg-background">
+//       <div className="text-center">
+//         <h1 className="text-4xl font-bold text-foreground mb-4">
+//           Dashboard Coming Soon
+//         </h1>
+//         <p className="text-muted-foreground mb-8">
+//           This page is under construction
+//         </p>
+//         <button
+//           onClick={() => (window.location.href = "/login")}
+//           className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
+//         >
+//           Back to Login
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };
 
 // 404 Not Found component
 const NotFound = () => {
@@ -72,7 +73,8 @@ const App = () => {
           element={<ForgotPassSuccessPage />}
         />
         {/* Dashboard - Placeholder */}
-        <Route path="/dashboard" element={<DashboardPlaceholder />} />
+        {/* Employer's Dashboard */}
+        <Route path="/dashboard" element={<EmployerDashboardPage />} />
 
         {/* Default redirect */}
         <Route path="/" element={<LandingPage />} />
