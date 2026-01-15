@@ -9,7 +9,6 @@ import { uploadCompanyLogo, deleteCompanyLogo } from '../utils/companyLogoUpload
     PATCH /profile
     DELETE /profile
     PUT /profile/logo 
-
 */
 
 class CompanyProfileService {
@@ -104,3 +103,5 @@ class CompanyProfileService {
     return profile;
   }
 }
+
+export default CompanyProfileService;
