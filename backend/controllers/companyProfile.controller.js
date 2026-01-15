@@ -1,4 +1,8 @@
 import CompanyProfileService from "../services/companyProfile.service.js";
+import {
+  createCompanyProfileSchema,
+  updateCompanyProfileSchema
+} from '../validators/companyProfile.validator.js';
 
 /*
   ENDPOINTS (/api/v1/company/) 
@@ -13,7 +17,7 @@ import CompanyProfileService from "../services/companyProfile.service.js";
 const createProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const payload = req.body;
+    const payload = createCompanyProfileSchema.parse(req.body);
 
     const profile = await CompanyProfileService.createProfile(userId, payload);
 
@@ -24,6 +28,13 @@ const createProfile = async (req, res) => {
 
     res.status(201).json(responseObj);
   } catch (err) {
+    if (err.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        errors: err.flatten().fieldErrors,
+      });
+    }
+
     res.status(400).json({
       success: false,
       message: err.message,
@@ -56,7 +67,7 @@ const getProfile = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const payload = req.body;
+    const payload = updateCompanyProfileSchema.parse(req.body);
 
     const profile = await CompanyProfileService.updateProfile(userId, payload);
 
@@ -67,6 +78,13 @@ const updateProfile = async (req, res) => {
 
     res.status(200).json(responseObj);
   } catch (err) {
+    if (err.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        errors: err.flatten().fieldErrors,
+      });
+    }
+    
     res.status(400).json({
       success: false,
       message: err.message,
