@@ -1,5 +1,5 @@
 import ApplicantProfile from "../models/ApplicantProfile.js";
-import cloudinary from '../config/cloudinary.js';
+import cloudinary from '../config/cloudinaryApplicant.config.js';
 
 /* 
 ENDPOINTS (/api/v1/applicant/)

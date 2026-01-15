@@ -1,4 +1,5 @@
 import ApplicantProfileService from "../services/applicantProfile.service.js";
+import { parseResume } from "../utils/resumeParser.utils.js";
 
 /* 
 ENDPOINTS (/api/v1/applicant/)
@@ -50,7 +51,7 @@ const getProfile = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const profile = await ApplicantProfileService.getProfile({ user: userId });
+    const profile = await ApplicantProfileService.getProfile(userId);
 
     const responseObj = {
       success: true,
@@ -227,15 +228,22 @@ const uploadResume = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    if(!req.file) {
+    if (!req.file) {
       throw new Error('Resume file is required.');
     }
 
-    const resumes = await ApplicantProfileService.uploadResume(userId, req.file);
+    const resume = await ApplicantProfileService.uploadResume(userId, req.file);
+    const parsedText = await parseResume(req.file);
+
+    console.log('--- PARSED RESUME TEXT ---');
+    console.log(parsedText.slice(0, 500)); 
+
+    await ApplicantProfileService.updateProfile(userId, { resumeParsed: true });
 
     const responseObj = {
       success: true,
-      data: resumes,
+      data: resume,
+      parsedPreview: parsedText.slice(0, 300),
     };
 
     res.status(201).json(responseObj);
@@ -267,3 +275,17 @@ const deleteResume = async (req, res) => {
     });
   }
 }
+
+export {
+  createProfile,
+  getProfile,
+  updateProfile,
+  createEducation,
+  updateEducation,
+  deleteEducation,
+  createExperience,
+  updateExperience,
+  deleteExperience,
+  uploadResume,
+  deleteResume
+};

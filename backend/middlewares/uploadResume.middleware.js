@@ -15,7 +15,7 @@ const fileFilter = (req, file, cb) => {
   }
 }
 
-const uploadResume = multer({
+const uploadResumeMiddleware = multer({
   storage, 
   fileFilter,
   limits: {
@@ -23,4 +23,4 @@ const uploadResume = multer({
   }
 });
 
-export default uploadResume;
+export default uploadResumeMiddleware;
