@@ -117,3 +117,10 @@ const uploadCompanyLogo = async (req, res) => {
   }
 }
 
+export {
+  createProfile,
+  getProfile,
+  updateProfile,
+  deleteProfile,
+  uploadCompanyLogo
+};
