@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Briefcase, Eye, EyeOff, CheckCircle } from "lucide-react";
+import { authService } from "../../services/authService";
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     fullName: "",
@@ -11,10 +14,43 @@ const SignUpPage = () => {
     userType: "jobseeker",
     agreedToTerms: false,
   });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Sign up with:", formData);
+    setError("");
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
+
+    // Validate terms agreement
+    if (!formData.agreedToTerms) {
+      setError("Please agree to the Terms of Service and Privacy Policy");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await authService.register(
+        formData.fullName,
+        formData.email,
+        formData.password
+      );
+
+      // Registration successful
+      navigate("/verify-email", {
+        state: { email: formData.email },
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -24,7 +60,7 @@ const SignUpPage = () => {
         <div className="w-full max-w-md">
           {/* Logo */}
           <button
-            onClick={() => console.log("Back to home")}
+            onClick={() => navigate("/")}
             className="inline-flex items-center gap-2 mb-8 text-foreground hover:opacity-80 transition-opacity"
           >
             <Briefcase className="w-5 h-5" style={{ color: "#047857" }} />
@@ -39,7 +75,7 @@ const SignUpPage = () => {
             <p className="text-sm text-muted-foreground font-normal">
               Already have an account?{" "}
               <button
-                onClick={() => console.log("Switch to login")}
+                onClick={() => navigate("/login")}
                 className="font-normal hover:opacity-80 transition-opacity underline"
                 style={{ color: "#047857" }}
               >
@@ -47,6 +83,13 @@ const SignUpPage = () => {
               </button>
             </p>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm text-red-600">{error}</p>
+            </div>
+          )}
 
           {/* Sign Up Form */}
           <form className="space-y-4" onSubmit={handleSubmit}>
@@ -61,6 +104,7 @@ const SignUpPage = () => {
                   onClick={() =>
                     setFormData({ ...formData, userType: "jobseeker" })
                   }
+                  disabled={loading}
                   className={`py-2.5 px-4 rounded-lg border transition-all text-sm font-normal ${
                     formData.userType === "jobseeker"
                       ? "bg-accent text-foreground"
@@ -83,6 +127,7 @@ const SignUpPage = () => {
                   onClick={() =>
                     setFormData({ ...formData, userType: "employer" })
                   }
+                  disabled={loading}
                   className={`py-2.5 px-4 rounded-lg border transition-all text-sm font-normal ${
                     formData.userType === "employer"
                       ? "bg-accent text-foreground"
@@ -122,6 +167,7 @@ const SignUpPage = () => {
                 className="w-full px-3.5 py-2.5 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                 autoComplete="name"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -144,6 +190,7 @@ const SignUpPage = () => {
                 className="w-full px-3.5 py-2.5 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                 autoComplete="email"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -167,11 +214,13 @@ const SignUpPage = () => {
                   className="w-full px-3.5 py-2.5 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                   autoComplete="new-password"
                   required
+                  disabled={loading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  disabled={loading}
                 >
                   {showPassword ? (
                     <EyeOff className="w-5 h-5" />
@@ -192,7 +241,7 @@ const SignUpPage = () => {
               </label>
               <input
                 id="confirmPassword"
-                type="password"
+                type={showPassword ? "text" : "password"}
                 value={formData.confirmPassword}
                 onChange={(e) =>
                   setFormData({ ...formData, confirmPassword: e.target.value })
@@ -201,6 +250,7 @@ const SignUpPage = () => {
                 className="w-full px-3.5 py-2.5 bg-input-background border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-shadow"
                 autoComplete="new-password"
                 required
+                disabled={loading}
               />
             </div>
 
@@ -219,6 +269,7 @@ const SignUpPage = () => {
                   className="w-4 h-4 mt-0.5 rounded border-border focus:ring-2 focus:ring-ring"
                   style={{ accentColor: "#047857" }}
                   required
+                  disabled={loading}
                 />
                 <span className="text-sm text-foreground font-normal">
                   I agree to the{" "}
@@ -244,10 +295,11 @@ const SignUpPage = () => {
             {/* Submit Button */}
             <button
               type="submit"
-              className="w-full text-white py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm font-medium"
+              disabled={loading}
+              className="w-full text-white py-2.5 rounded-lg hover:opacity-90 transition-opacity text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ backgroundColor: "#047857" }}
             >
-              Create account
+              {loading ? "Creating account..." : "Create account"}
             </button>
 
             {/* Divider */}
@@ -276,6 +328,7 @@ const SignUpPage = () => {
               <button
                 type="button"
                 className="w-full flex items-center justify-center gap-2.5 py-2.5 border border-border rounded-lg hover:bg-accent transition-colors text-sm font-normal"
+                disabled={loading}
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24">
                   <path
@@ -301,6 +354,7 @@ const SignUpPage = () => {
               <button
                 type="button"
                 className="w-full flex items-center justify-center gap-2.5 py-2.5 border border-border rounded-lg hover:bg-accent transition-colors text-sm font-normal"
+                disabled={loading}
               >
                 <svg className="w-4 h-4" fill="#1877F2" viewBox="0 0 24 24">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
@@ -317,11 +371,10 @@ const SignUpPage = () => {
         className="hidden lg:flex w-full lg:w-1/2 p-8 lg:p-12 items-center justify-center relative overflow-hidden min-h-[500px] lg:min-h-screen"
         style={{ backgroundColor: "#065f46" }}
       >
-        {/* Background Image with Overlay */}
         <div
-          className="absolute inset-0 bg-cover bg-center opacity-50"
+          className="absolute inset-0 bg-cover bg-center opacity-30"
           style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1579487785973-74d2ca7abdd5?q=80&w=688&auto=format&fit=crop')`,
+            backgroundImage: `url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')`,
           }}
         />
         <div
@@ -333,7 +386,6 @@ const SignUpPage = () => {
         />
 
         <div className="relative z-10 max-w-md">
-          {/* Feature Card - Translucent Design */}
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
             <h3 className="text-2xl font-medium text-white mb-4">
               Join a transparent hiring platform
