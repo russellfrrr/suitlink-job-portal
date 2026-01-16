@@ -31,10 +31,6 @@ const applicantProfileSchema = new mongoose.Schema({
     publicId: String,
     url: String,
   },
-  resumeParsed: {
-    type: Boolean,
-    default: false,
-  },
   resumeAnalysis: {
     score: {
       type: Number,
