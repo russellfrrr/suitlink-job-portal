@@ -90,6 +90,31 @@ const updateProfile = async (req, res) => {
   }
 }
 
+// PUT /profile/avatar
+const uploadAvatar = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    if (!req.file) {
+      throw new Error('Profile image is required.');
+    }
+
+    const avatar = await ApplicantProfileService.uploadAvatar(userId, req.file);
+
+    const responseObj = {
+      success: true,
+      data: avatar,
+    };
+    
+    res.status(200).json(responseObj);
+  } catch (err) {
+    res.status(400).json({
+      success: false,
+      message: err.message
+    });
+  }
+}
+
 // POST /education
 const createEducation = async (req, res) => {
   try {
@@ -291,6 +316,7 @@ export {
   createProfile,
   getProfile,
   updateProfile,
+  uploadAvatar,
   createEducation,
   updateEducation,
   deleteEducation,
