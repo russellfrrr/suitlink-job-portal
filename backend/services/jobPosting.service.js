@@ -117,7 +117,7 @@ class JobPostingService {
   }
 
   // PATCH /:jobId/close
-  static async closeJob(jobId, employerId) {
+  static async archiveJob(jobId, employerId) {
     const job = await JobPosting.findById(jobId);
 
     if (!job) {
@@ -135,7 +135,7 @@ class JobPostingService {
   }
 
   // PATCH /:jobId/open
-  static async openJob(jobId, employerId) {
+  static async restoreJob(jobId, employerId) {
     const job = await JobPosting.findById(jobId);
 
     if (!job) {
