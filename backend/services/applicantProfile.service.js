@@ -1,4 +1,4 @@
-import ApplicantProfile from "../models/ApplicantProfile.js";
+import ApplicantProfile from '../models/ApplicantProfile.js';
 import cloudinary from '../config/cloudinaryApplicant.config.js';
 
 /* 
