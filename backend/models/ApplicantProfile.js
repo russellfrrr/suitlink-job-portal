@@ -34,7 +34,31 @@ const applicantProfileSchema = new mongoose.Schema({
   resumeParsed: {
     type: Boolean,
     default: false,
-  }
+  },
+  resumeAnalysis: {
+    score: {
+      type: Number,
+    },
+    seniority: {
+      type: String,
+      enum: ['Junior', 'Mid', 'Senior'],
+    },
+    strengths: {
+      type: [String],
+      default: [],
+    },
+    weaknesses: {
+      type: [String],
+      default: [],
+    },
+    suggestions: {
+      type: [String],
+      default: [],
+    },
+  },
+resumeAnalyzedAt: {
+  type: Date,
+},
 }, { timestamps: true });
 
 const ApplicantProfile = mongoose.model('ApplicantProfile', applicantProfileSchema);

@@ -1,6 +1,6 @@
 import ApplicantProfileService from "../services/applicantProfile.service.js";
 import { parseResume } from "../utils/resumeParser.utils.js";
-import { extractResumeData } from '../services/gemini.service.js';
+import { evaluateResume } from "../services/openaiResumeEvaluator.service.js";
 
 /* 
 ENDPOINTS (/api/v1/applicant/)
@@ -236,19 +236,25 @@ const uploadResume = async (req, res) => {
     const resume = await ApplicantProfileService.uploadResume(userId, req.file);
     const parsedText = await parseResume(req.file);
 
-    const extractedData = await extractResumeData(parsedText);
+    let resumeAnalysis = null;
 
-    await ApplicantProfileService.updateProfile(userId, { 
-      skills: extractedData.skills || [],
-      resumeParsed: true 
-    });
+    try {
+      resumeAnalysis = await evaluateResume(parsedText);
+
+      await ApplicantProfileService.updateProfile(userId, {
+        resumeAnalysis,
+        resumeAnalyzedAt: new Date(),
+      });
+    } catch (aiErr) {
+      console.error('Resume evaluation failed:', aiErr.message);
+    }
 
     const responseObj = {
       success: true,
       data: {
         resume,
-        extractedData
-      },
+        resumeAnalysis
+      }
     };
 
     res.status(201).json(responseObj);
@@ -258,7 +264,7 @@ const uploadResume = async (req, res) => {
       message: err.message,
     });
   }
-}
+};
 
 const deleteResume = async (req, res) => {
   try {
