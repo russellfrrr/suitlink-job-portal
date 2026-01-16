@@ -24,6 +24,5 @@ const experienceSchema = new mongoose.Schema({
   }
 }, { _id: true });
 
-const Experience = mongoose.model('Experience', experienceSchema);
 
-export default Experience;
+export default experienceSchema;

@@ -23,6 +23,5 @@ const educationSchema = new mongoose.Schema({
   },
 }, { _id: true });
 
-const Education = mongoose.model('Education', educationSchema);
 
-export default Education;
+export default educationSchema;

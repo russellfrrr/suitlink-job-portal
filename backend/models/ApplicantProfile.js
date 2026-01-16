@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
-import Education from './subdocuments/Education.js';
-import Experience from './subdocuments/Experience.js';
-import Resume from './subdocuments/Resume.js';
+import educationSchema from './subdocuments/Education.js';
+import experienceSchema from './subdocuments/Experience.js';
+import resumeSchema from './subdocuments/Resume.js';
 
 const applicantProfileSchema = new mongoose.Schema({
   user: {
@@ -20,13 +20,13 @@ const applicantProfileSchema = new mongoose.Schema({
     trim: true,
     required: [true, 'Last name required!'],
   },
-  education: [Education],
-  experience: [Experience],
+  education: [educationSchema],
+  experience: [experienceSchema],
   skills: {
     type: [String],
     default: [],
   },
-  resumes: [Resume],
+  resumes: [resumeSchema],
   profileImage: {
     publicId: String,
     url: String,

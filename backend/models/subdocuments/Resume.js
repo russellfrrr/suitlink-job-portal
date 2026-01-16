@@ -19,6 +19,5 @@ const resumeSchema = new mongoose.Schema({
   },
 }, { _id: true });
 
-const Resume = mongoose.model('Resume', resumeSchema);
 
-export default Resume;
+export default resumeSchema;
