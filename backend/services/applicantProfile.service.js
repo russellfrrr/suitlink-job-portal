@@ -184,6 +184,16 @@ class ApplicantProfileService {
       throw new Error('Applicant profile not found.');
     }
 
+    if (profile.resumes.length > 0) {
+      const oldResume = profile.resumes[0];
+
+      await cloudinary.uploader.destroy(oldResume.publicId, {
+        resource_type: 'raw'
+      });
+
+      profile.resumes = [];
+    }
+
     const result = await new Promise((resolve, reject) => {
       cloudinary.uploader.upload_stream(
         {

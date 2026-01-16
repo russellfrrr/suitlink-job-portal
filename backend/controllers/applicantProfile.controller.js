@@ -1,5 +1,6 @@
 import ApplicantProfileService from "../services/applicantProfile.service.js";
 import { parseResume } from "../utils/resumeParser.utils.js";
+import { extractResumeData } from '../services/gemini.service.js';
 
 /* 
 ENDPOINTS (/api/v1/applicant/)
@@ -235,15 +236,19 @@ const uploadResume = async (req, res) => {
     const resume = await ApplicantProfileService.uploadResume(userId, req.file);
     const parsedText = await parseResume(req.file);
 
-    console.log('--- PARSED RESUME TEXT ---');
-    console.log(parsedText.slice(0, 500)); 
+    const extractedData = await extractResumeData(parsedText);
 
-    await ApplicantProfileService.updateProfile(userId, { resumeParsed: true });
+    await ApplicantProfileService.updateProfile(userId, { 
+      skills: extractedData.skills || [],
+      resumeParsed: true 
+    });
 
     const responseObj = {
       success: true,
-      data: resume,
-      parsedPreview: parsedText.slice(0, 300),
+      data: {
+        resume,
+        extractedData
+      },
     };
 
     res.status(201).json(responseObj);
