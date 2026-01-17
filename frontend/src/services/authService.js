@@ -2,8 +2,8 @@ import api from "../api/axiosConfig.js";
 
 export const authService = {
   // Register new account
-  register: async (name, email, password) => {
-    return api.post("/register", { name, email, password });
+  register: async (name, email, password, role) => {
+    return api.post("/register", { name, email, password, role });
   },
 
   // Verify email with code
@@ -16,7 +16,6 @@ export const authService = {
     return api.post("/resend-verification", { email });
   },
 
-  // Login
   login: async (email, password) => {
     return api.post("/login", { email, password });
   },
@@ -39,6 +38,11 @@ export const authService = {
   // Resend password reset code
   resendResetPassword: async (email) => {
     return api.post("/resend-reset-password", { email });
+  },
+
+  // Get current user
+  getCurrentUser: async () => {
+    return api.get("/me");
   },
 };
 
