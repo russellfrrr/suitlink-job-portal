@@ -15,6 +15,7 @@ import jobService from "../../services/jobService";
 import CompanySetupModal from "../../components/EmployerDashboard/CompanySetupModal";
 import JobCard from "../../components/EmployerDashboard/JobCard";
 import StatsCard from "../../components/EmployerDashboard/StatsCard";
+import Logo from "../../components/Auth/Shared/Logo";
 
 const EmployerDashboardPage = () => {
   const navigate = useNavigate();
@@ -56,16 +57,22 @@ const EmployerDashboardPage = () => {
       setLoading(true);
       const response = await companyService.getProfile();
 
+      // ✅ FIX: Check for needsSetup flag or null data
       if (response.success) {
-        setCompanyProfile(response.data);
+        if (response.needsSetup || !response.data) {
+          // No profile exists - show setup modal
+          setShowSetupModal(true);
+          setCompanyProfile(null);
+        } else {
+          // Profile exists - use it
+          setCompanyProfile(response.data);
+        }
       }
     } catch (err) {
-      if (err.message.includes("not found")) {
-        // No profile exists - show setup modal
-        setShowSetupModal(true);
-      } else {
-        console.error("Failed to fetch company profile:", err);
-      }
+      console.error("Failed to fetch company profile:", err);
+      // On any error, show setup modal
+      setShowSetupModal(true);
+      setCompanyProfile(null);
     } finally {
       setLoading(false);
     }
@@ -85,14 +92,26 @@ const EmployerDashboardPage = () => {
 
   const handleSetupSuccess = async () => {
     setShowSetupModal(false);
+    // ✅ FIX: Refetch profile after successful setup
     await fetchCompanyProfile();
   };
 
   const handlePostJob = () => {
+    // ✅ FIX: Only allow job posting if profile exists
+    if (!companyProfile) {
+      alert("Please complete your company profile first");
+      setShowSetupModal(true);
+      return;
+    }
     navigate("/employer/post-job");
   };
 
   const handleViewProfile = () => {
+    if (!companyProfile) {
+      alert("Please complete your company profile first");
+      setShowSetupModal(true);
+      return;
+    }
     navigate("/employer-profile");
   };
 
@@ -125,23 +144,16 @@ const EmployerDashboardPage = () => {
 
   return (
     <>
-      {showSetupModal && <CompanySetupModal onSuccess={handleSetupSuccess} />}
+      {(showSetupModal || !companyProfile) && (
+        <CompanySetupModal onSuccess={handleSetupSuccess} />
+      )}
 
       <div className="min-h-screen bg-gray-50">
         {/* Header */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="px-6 py-4">
             <div className="flex items-center justify-between">
-              {/* Logo */}
-              <div className="flex items-center gap-2">
-                <Briefcase className="w-6 h-6 text-chart-1" />
-                <span className="text-xl text-gray-900">SuitLink</span>
-                {hasCredibilityBadge && (
-                  <span className="ml-2 px-2 py-1 bg-chart-1/10 text-chart-1 text-xs rounded-full font-medium">
-                    Verified
-                  </span>
-                )}
-              </div>
+              <Logo />
 
               {/* Desktop Navigation */}
               <nav className="hidden md:flex items-center gap-6">
