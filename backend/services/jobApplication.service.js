@@ -2,6 +2,7 @@ import JobApplication from '../models/JobApplication.js';
 import JobPosting from '../models/JobPosting.js';
 import ApplicantProfile from '../models/ApplicantProfile.js';
 import CompanyProfile from '../models/CompanyProfile.js';
+import NotificationService from './notification.service.js';
 
 /*
   ENDPOINTS (api/v1/applications)
@@ -48,6 +49,17 @@ class JobApplicationService {
       { $inc: { 'metrics.totalApplicants': 1 }}
     );
 
+    await NotificationService.create({
+      user: jobPosting.employer,
+      type: 'NEW_APPLICATION',
+      title: 'New job application',
+      message: 'A new applicant has applied to your job posting.',
+      data: {
+        jobPostingId: jobPosting._id,
+        applicationId: application._id,
+      },
+    });
+
     return application;
   }
 
@@ -84,6 +96,19 @@ class JobApplicationService {
 
     application.status = status;
     await application.save();
+
+    const applicantProfile = await ApplicantProfile.findById(application.applicant);
+    
+    await NotificationService.create({
+      user: applicantProfile.user,
+      type: 'APPLICATION_STATUS_UPDATE',
+      title: 'Application status updated',
+      message: `Your application has been ${status}.`,
+      data: {
+        applicationId: application._id,
+        status,
+      },
+    });
 
     return application;
   }
