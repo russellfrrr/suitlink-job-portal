@@ -29,6 +29,16 @@ class JobPostingService {
       company: company._id,
     });
 
+    await CompanyProfile.findByIdAndUpdate(
+      company._id,
+      {
+        $inc: {
+          'metrics.jobPostsCount': 1,
+          'metrics.activeJobsCount': 1,
+        }
+      }
+    );
+
     return job;
   }
 
@@ -128,8 +138,17 @@ class JobPostingService {
       throw new Error('Unauthorized!');
     }
 
+    const oldStatus = job.status;
+
     job.status = 'closed';
     await job.save();
+
+    if (oldStatus === 'open') {
+      await CompanyProfile.findByIdAndUpdate(
+        job.company,
+        { $inc: { 'metrics.activeJobsCount': -1 } }
+      );
+    }
 
     return job;
   }
@@ -146,8 +165,17 @@ class JobPostingService {
       throw new Error('Unauthorized!');
     }
 
+    const oldStatus = job.status;
+
     job.status = 'open';
     await job.save();
+
+    if (oldStatus === 'closed') {
+      await CompanyProfile.findByIdAndUpdate(
+        job.company,
+        { $inc: { 'metrics.activeJobsCount': 1 } }
+      );
+    }
 
     return job;
   }
