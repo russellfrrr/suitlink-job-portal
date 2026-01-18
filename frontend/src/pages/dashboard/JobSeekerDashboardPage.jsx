@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Search, Briefcase, SlidersHorizontal, Bell, X } from "lucide-react";
+import { Search, SlidersHorizontal, X } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import jobsApiService from "../../services/applicantJobsService";
 import applicationsApiService from "../../services/applicationsService";
@@ -16,11 +16,16 @@ const JobSeekerDashboardPage = () => {
   const location = useLocation();
   const { user, loading: authLoading, isApplicant } = useAuth();
 
+  const [bookmarkedJobIds, setBookmarkedJobIds] = useState(new Set());
   const [applicantProfile, setApplicantProfile] = useState(null);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [appliedJobIds, setAppliedJobIds] = useState(new Set());
+  const [searchInput, setSearchInput] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedJob, setSelectedJob] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -29,12 +34,6 @@ const JobSeekerDashboardPage = () => {
     hasNextPage: false,
     hasPrevPage: false,
   });
-
-  const [showFilters, setShowFilters] = useState(false);
-  const [appliedJobIds, setAppliedJobIds] = useState(new Set());
-  const [searchInput, setSearchInput] = useState("");
-  const [selectedJob, setSelectedJob] = useState(null);
-
   const [filters, setFilters] = useState({
     search: "",
     employmentType: "",
@@ -42,57 +41,31 @@ const JobSeekerDashboardPage = () => {
     salaryMin: "",
     salaryMax: "",
   });
+  const abortControllerRef = useRef(null);
 
-  // Check auth and role
   useEffect(() => {
     if (!authLoading) {
-      if (!user) {
-        navigate("/login");
-      } else if (!isApplicant) {
-        navigate("/employer-dashboard");
-      }
+      if (!user) navigate("/login");
+      else if (!isApplicant) navigate("/employer-dashboard");
     }
   }, [user, authLoading, isApplicant, navigate]);
 
-  // Fetch applicant profile
   useEffect(() => {
-    if (user && isApplicant) {
-      fetchApplicantProfile();
-    }
+    if (user && isApplicant) fetchApplicantProfile();
   }, [user, isApplicant]);
-
-  // Fetch applied jobs when profile exists
   useEffect(() => {
-    if (applicantProfile) {
-      fetchAppliedJobs();
-    }
+    if (applicantProfile) fetchAppliedJobs();
   }, [applicantProfile]);
-
-  // Fetch jobs when filters or pagination change
   useEffect(() => {
     fetchJobs();
   }, [pagination.page, filters]);
-
-  // Debounced search - update filters when search input changes
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchInput !== filters.search) {
-        setFilters((prev) => ({ ...prev, search: searchInput }));
-        setPagination((prev) => ({ ...prev, page: 1 }));
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [searchInput]);
 
   const fetchApplicantProfile = async () => {
     try {
       setLoading(true);
       const response = await applicantService.getProfile();
-
       if (response.success) {
-        // Profile data will be null if no profile exists
-        if (!response.data || response.data === null) {
+        if (!response.data) {
           setShowSetupModal(true);
           setApplicantProfile(null);
         } else {
@@ -100,14 +73,24 @@ const JobSeekerDashboardPage = () => {
           setShowSetupModal(false);
         }
       }
-    } catch (err) {
-      console.error("Failed to fetch applicant profile:", err);
-      // On any error, show setup modal
+    } catch {
       setShowSetupModal(true);
       setApplicantProfile(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBookmarkToggle = (jobId) => {
+    setBookmarkedJobIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(jobId)) {
+        next.delete(jobId);
+      } else {
+        next.add(jobId);
+      }
+      return next;
+    });
   };
 
   const fetchAppliedJobs = async () => {
@@ -116,40 +99,34 @@ const JobSeekerDashboardPage = () => {
         page: 1,
         limit: 1000,
       });
-
       if (response.success && response.data) {
-        // Handle both array and applications object structure
         const applications = Array.isArray(response.data)
           ? response.data
           : response.data.applications || [];
-
         const appliedIds = new Set(
           applications
             .map((app) => app.jobPosting?._id || app.jobPosting)
-            .filter(Boolean) // Filter out any undefined/null values
+            .filter(Boolean)
         );
         setAppliedJobIds(appliedIds);
       }
-    } catch (err) {
-      console.error("Error fetching applied jobs:", err);
-      // Set empty set on error
+    } catch {
       setAppliedJobIds(new Set());
     }
   };
 
   const fetchJobs = async () => {
+    if (abortControllerRef.current) abortControllerRef.current.abort();
+    abortControllerRef.current = new AbortController();
     try {
       setLoading(true);
       setError("");
-
       const params = {
         page: pagination.page,
         limit: pagination.limit,
         ...filters,
       };
-
       const response = await jobsApiService.getJobs(params);
-
       if (response.success) {
         setJobs(response.data.jobs || []);
         setPagination(
@@ -164,82 +141,81 @@ const JobSeekerDashboardPage = () => {
         );
       }
     } catch (err) {
-      console.error("Error fetching jobs:", err);
-      setError(err.message || "Failed to load jobs");
+      if (err.name !== "AbortError")
+        setError(err.message || "Failed to load jobs");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    setFilters((prev) => ({ ...prev, search: searchInput }));
+  const handleSearch = () => {
+    setFilters((prev) => ({ ...prev, search: searchInput.trim() }));
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
-
+  const handleSearchKeyPress = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearch();
+    }
+  };
+  const handleClearSearch = () => {
+    setSearchInput("");
+    setFilters((prev) => ({ ...prev, search: "" }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
   const handleFilterChange = (key, value) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
-
   const handleJobClick = (jobId) => {
     const job = jobs.find((j) => j._id === jobId);
-    if (job) {
-      setSelectedJob(job);
-    }
+    if (job) setSelectedJob(job);
   };
-
   const handleApplySuccess = (jobId) => {
     setAppliedJobIds((prev) => new Set([...prev, jobId]));
-    fetchAppliedJobs(); // Refresh applied jobs
+    fetchAppliedJobs();
   };
-
-  const closeModal = () => {
-    setSelectedJob(null);
-  };
-
-  const goToPage = (page) => {
-    setPagination((prev) => ({ ...prev, page }));
-  };
-
+  const closeModal = () => setSelectedJob(null);
+  const goToPage = (page) => setPagination((prev) => ({ ...prev, page }));
   const nextPage = () => {
-    if (pagination.hasNextPage) {
+    if (pagination.hasNextPage)
       setPagination((prev) => ({ ...prev, page: prev.page + 1 }));
-    }
   };
-
   const prevPage = () => {
-    if (pagination.hasPrevPage) {
+    if (pagination.hasPrevPage)
       setPagination((prev) => ({ ...prev, page: prev.page - 1 }));
-    }
   };
-
-  const isActiveRoute = (path) => {
-    return location.pathname === path;
-  };
-
   const handleSetupSuccess = async () => {
     setShowSetupModal(false);
     await fetchApplicantProfile();
   };
+  const handleResetFilters = () => {
+    setFilters({
+      search: "",
+      employmentType: "",
+      remote: "",
+      salaryMin: "",
+      salaryMax: "",
+    });
+    setSearchInput(""); // Also clear the search input
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
 
-  if (authLoading || loading) {
+  if (authLoading)
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chart-1 mx-auto"></div>
-          <p className="text-muted-foreground mt-4">Loading...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="text-gray-500 mt-4">Loading...</p>
         </div>
       </div>
     );
-  }
 
   return (
     <>
       {(showSetupModal || !applicantProfile) && (
         <ApplicantProfileSetupModal onSuccess={handleSetupSuccess} />
       )}
-
       {selectedJob && (
         <JobModal
           job={selectedJob}
@@ -248,148 +224,202 @@ const JobSeekerDashboardPage = () => {
           onApplySuccess={handleApplySuccess}
         />
       )}
-
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <ApplicantNavbar />
         </header>
 
-        <main className="p-6">
-          {/* Search and Filters */}
-          <div className="mb-6 flex gap-3">
-            <form onSubmit={handleSearchSubmit} className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-muted-foreground" />
-              <input
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Search by job title or company name..."
-                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 bg-white text-foreground"
-              />
-            </form>
-            <button
-              type="button"
-              onClick={() => setShowFilters(!showFilters)}
-              className="md:hidden bg-chart-1 text-white px-4 py-3 rounded-lg hover:opacity-90"
-            >
-              <SlidersHorizontal className="size-5" />
-            </button>
-          </div>
+        <div className="flex w-full">
+          {/* Sidebar */}
+          <aside
+            className={`
+        hidden lg:flex
+        flex-col
+        w-72
+        h-[calc(100vh-4rem)]
+        bg-white
+        border-r border-gray-200
+        p-6
+        sticky top-16
+        overflow-y-auto
+      `}
+          >
+            <h3 className="text-lg text-gray-900 font-medium mb-4">Filters</h3>
+            <div className="space-y-4 flex-1">
+              {/* Employment Type */}
+              <div>
+                <label className="block text-sm text-gray-900 mb-2">
+                  Employment Type
+                </label>
+                <select
+                  value={filters.employmentType}
+                  onChange={(e) =>
+                    handleFilterChange("employmentType", e.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white text-gray-900 placeholder-gray-400"
+                >
+                  <option value="">All Types</option>
+                  <option value="full-time">Full-time</option>
+                  <option value="part-time">Part-time</option>
+                  <option value="contract">Contract</option>
+                  <option value="internship">Internship</option>
+                </select>
+              </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Filters Sidebar */}
-            <div
-              className={`lg:col-span-1 ${
-                showFilters ? "block" : "hidden lg:block"
-              }`}
-            >
-              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg text-foreground">Filters</h3>
-                  {showFilters && (
-                    <button
-                      onClick={() => setShowFilters(false)}
-                      className="lg:hidden p-1 hover:bg-accent rounded"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
-                </div>
+              {/* Work Type */}
+              <div>
+                <label className="block text-sm text-gray-900 mb-2">
+                  Work Type
+                </label>
+                <select
+                  value={filters.remote}
+                  onChange={(e) => handleFilterChange("remote", e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white text-gray-900 placeholder-gray-400"
+                >
+                  <option value="">All</option>
+                  <option value="true">Remote</option>
+                  <option value="false">On-site</option>
+                </select>
+              </div>
 
-                <div className="space-y-4">
-                  {/* Employment Type */}
-                  <div>
-                    <label className="block text-sm text-foreground mb-2">
-                      Employment Type
-                    </label>
-                    <select
-                      value={filters.employmentType}
-                      onChange={(e) =>
-                        handleFilterChange("employmentType", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
-                    >
-                      <option value="">All Types</option>
-                      <option value="full-time">Full-time</option>
-                      <option value="part-time">Part-time</option>
-                      <option value="contract">Contract</option>
-                      <option value="internship">Internship</option>
-                    </select>
-                  </div>
+              {/* Salary Min */}
+              <div>
+                <label className="block text-sm text-gray-900 mb-2">
+                  Minimum Salary
+                </label>
+                <input
+                  type="number"
+                  value={filters.salaryMin}
+                  onChange={(e) =>
+                    handleFilterChange("salaryMin", e.target.value)
+                  }
+                  placeholder="e.g., 30000"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white text-gray-900 placeholder-gray-400"
+                />
+              </div>
 
-                  {/* Remote */}
-                  <div>
-                    <label className="block text-sm text-foreground mb-2">
-                      Work Type
-                    </label>
-                    <select
-                      value={filters.remote}
-                      onChange={(e) =>
-                        handleFilterChange("remote", e.target.value)
-                      }
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
-                    >
-                      <option value="">All</option>
-                      <option value="true">Remote</option>
-                      <option value="false">On-site</option>
-                    </select>
-                  </div>
-
-                  {/* Salary Range */}
-                  <div>
-                    <label className="block text-sm text-foreground mb-2">
-                      Minimum Salary
-                    </label>
-                    <input
-                      type="number"
-                      value={filters.salaryMin}
-                      onChange={(e) =>
-                        handleFilterChange("salaryMin", e.target.value)
-                      }
-                      placeholder="e.g., 30000"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-foreground mb-2">
-                      Maximum Salary
-                    </label>
-                    <input
-                      type="number"
-                      value={filters.salaryMax}
-                      onChange={(e) =>
-                        handleFilterChange("salaryMax", e.target.value)
-                      }
-                      placeholder="e.g., 80000"
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
-                    />
-                  </div>
-                </div>
+              {/* Salary Max */}
+              <div>
+                <label className="block text-sm text-gray-900 mb-2">
+                  Maximum Salary
+                </label>
+                <input
+                  type="number"
+                  value={filters.salaryMax}
+                  onChange={(e) =>
+                    handleFilterChange("salaryMax", e.target.value)
+                  }
+                  placeholder="e.g., 80000"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white text-gray-900 placeholder-gray-400"
+                />
               </div>
             </div>
 
-            {/* Job Listings */}
-            <div className="lg:col-span-3 space-y-6">
-              <JobGrid
-                jobs={jobs}
-                loading={loading}
-                error={error}
-                appliedJobIds={appliedJobIds}
-                onJobClick={handleJobClick}
-              />
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="
+    w-full
+    text-sm
+    font-medium
+    text-emerald-700
+    bg-emerald-50
+    px-3
+    py-2
+    rounded-lg
+    transition
+    hover:bg-emerald-100
+    hover:text-emerald-800
+    active:bg-emerald-200
+  "
+            >
+              Reset all filters
+            </button>
+          </aside>
 
-              {!loading && !error && jobs.length > 0 && (
+          {/* Main Content */}
+          <main className="flex-1 p-6">
+            {/* Search Row */}
+            <div className="mb-4 flex flex-col md:flex-row items-start md:items-center gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-gray-400" />
+                <input
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyPress={handleSearchKeyPress}
+                  placeholder="Search by job title or company name..."
+                  className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-emerald-600 focus:ring-1 focus:ring-emerald-600 bg-white text-gray-900 placeholder-gray-400"
+                />
+                {searchInput && (
+                  <button
+                    onClick={handleClearSearch}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 p-1.5 rounded"
+                  >
+                    <X className="size-5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Mobile Filter Toggle */}
+              <button
+                type="button"
+                onClick={() => setShowFilters(!showFilters)}
+                className="md:hidden bg-emerald-600 text-white px-4 py-3 rounded-lg hover:bg-emerald-700"
+              >
+                <SlidersHorizontal className="size-5" />
+              </button>
+
+              <button
+                onClick={handleSearch}
+                className="bg-emerald-600 text-white px-6 py-3 rounded-lg hover:bg-emerald-700 transition font-medium"
+              >
+                Search
+              </button>
+            </div>
+
+            {/* Meta Row */}
+            <div className="mb-4 text-gray-600 text-sm">
+              Showing {jobs.length} jobs
+            </div>
+
+            {/* Job Cards Grid */}
+            <JobGrid
+              jobs={jobs}
+              loading={loading}
+              error={error}
+              appliedJobIds={appliedJobIds}
+              onJobClick={handleJobClick}
+              bookmarkedJobIds={bookmarkedJobIds}
+              onBookmarkToggle={handleBookmarkToggle}
+            />
+
+            {!loading && !error && jobs.length > 0 && (
+              <div className="mt-6">
                 <Pagination
                   pagination={pagination}
                   onPageChange={goToPage}
                   onNext={nextPage}
                   onPrev={prevPage}
                 />
-              )}
+              </div>
+            )}
+            {/* Footer / Dynamic Info Section */}
+            <div className="mt-8 bg-emerald-700 text-white rounded-xl p-6">
+              <h3 className="text-lg font-medium">
+                {user?.name
+                  ? `Hey ${user.name}, discover your next opportunity!`
+                  : "Discover Your Next Opportunity with SuitLink"}
+              </h3>
+              <p className="text-sm text-emerald-100 mt-2">
+                {jobs.length > 0
+                  ? `You're currently viewing ${jobs.length} job${
+                      jobs.length > 1 ? "s" : ""
+                    }. SuitLink helps you find the best matches for your skills and experience.`
+                  : "SuitLink helps you find the best jobs that match your skills and experience. Stay updated with new opportunities and get personalized recommendations directly in your dashboard."}
+              </p>
             </div>
-          </div>
-        </main>
+          </main>
+        </div>
       </div>
     </>
   );

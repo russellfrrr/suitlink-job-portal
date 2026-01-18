@@ -43,11 +43,23 @@ class JobPostingService {
 
   // GET /
   static async getJobs(filters = {}, pagination = {}) {
-    const { employmentType, remote, salaryMin, salaryMax } = filters;
+    const { search, employmentType, remote, salaryMin, salaryMax } = filters;
     const { page = 1, limit = 10 } = pagination;
     const query = { status: "open" };
 
-    // Handle employmentType filter (can be single value or array)
+    if (search && search.trim()) {
+      const matchingCompanies = await CompanyProfile.find({
+        companyName: { $regex: search.trim(), $options: "i" },
+      }).select("_id");
+
+      const companyIds = matchingCompanies.map((c) => c._id);
+
+      query.$or = [
+        { title: { $regex: search.trim(), $options: "i" } },
+        { company: { $in: companyIds } },
+      ];
+    }
+
     if (employmentType) {
       if (Array.isArray(employmentType)) {
         query.employmentType = { $in: employmentType };
@@ -171,16 +183,6 @@ class JobPostingService {
       throw new Error("Unauthorized!");
     }
 
-    const oldStatus = job.status;
-
-    job.status = "open";
-    await job.save();
-
-    if (oldStatus === "closed") {
-      await CompanyProfile.findByIdAndUpdate(job.company, {
-        $inc: { "metrics.activeJobsCount": 1 },
-      });
-    }
     job.status = "open";
     await job.save();
 
