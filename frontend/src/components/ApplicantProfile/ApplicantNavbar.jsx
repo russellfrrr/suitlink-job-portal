@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Bell, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProfile } from "../../context/ProfileContext";
 import useAuth from "../../hooks/useAuth";
-import Logo from "../../components/Auth/Shared/Logo";
-import { authService } from "../../services/authService"
+import Logo from "../Auth/Shared/Logo";
+import { authService } from "../../services/authService";
+import NotificationsBell from "../Notifications/NotificationsBell";
 
 const ApplicantNavbar = () => {
   const navigate = useNavigate();
@@ -88,7 +89,7 @@ const ApplicantNavbar = () => {
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
-          <Logo />
+          <Logo to ="/applicant-dashboard"/>
 
           <nav className="hidden md:flex items-center gap-6">
             <button
@@ -117,9 +118,8 @@ const ApplicantNavbar = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            <button type="button" className="relative">
-              <Bell className="size-5 text-gray-500 hover:text-gray-900 transition-colors" />
-            </button>
+            {/* Notifications Bell */}
+            <NotificationsBell />
 
             <div className="relative" ref={menuRef}>
               <button
