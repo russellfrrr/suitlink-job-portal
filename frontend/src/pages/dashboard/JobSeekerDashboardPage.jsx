@@ -9,6 +9,7 @@ import JobGrid from "../../components/ApplicantDashboard/JobGrid";
 import JobModal from "../../components/ApplicantDashboard/JobModal";
 import Pagination from "../../components/ApplicantDashboard/Pagination";
 import ApplicantProfileSetupModal from "../../components/ApplicantProfile/ApplicantProfileSetupModal";
+import ApplicantNavbar from "../../components/ApplicantProfile/ApplicantNavbar";
 
 const JobSeekerDashboardPage = () => {
   const navigate = useNavigate();
@@ -224,7 +225,7 @@ const JobSeekerDashboardPage = () => {
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chart-1 mx-auto"></div>
           <p className="text-muted-foreground mt-4">Loading...</p>
@@ -248,52 +249,10 @@ const JobSeekerDashboardPage = () => {
         />
       )}
 
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gray-50">
         {/* Header */}
-        <header className="bg-card border-b border-border sticky top-0 z-40">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Briefcase className="size-7 text-chart-1" />
-                <span className="text-xl text-foreground">SuitLink</span>
-              </div>
-
-              <nav className="hidden md:flex items-center gap-6">
-                <button
-                  onClick={() => navigate("/applicant-dashboard")}
-                  className={`text-sm font-medium pb-1 ${
-                    isActiveRoute("/applicant-dashboard")
-                      ? "text-chart-1 border-b-2 border-chart-1"
-                      : "text-muted-foreground hover:text-foreground"
-                  } py-1`}
-                >
-                  Find Jobs
-                </button>
-                <button
-                  onClick={() => navigate("/applications")}
-                  className={`text-sm font-medium pb-1 ${
-                    isActiveRoute("/applications")
-                      ? "text-chart-1 border-b-2 border-chart-1"
-                      : "text-muted-foreground hover:text-foreground"
-                  } py-1`}
-                >
-                  Applications
-                </button>
-              </nav>
-
-              <div className="flex items-center gap-4">
-                <button className="relative">
-                  <Bell className="size-5 text-muted-foreground hover:text-foreground" />
-                </button>
-                <button
-                  onClick={() => navigate("/profile")}
-                  className="w-9 h-9 rounded-full bg-chart-1 flex items-center justify-center text-white text-sm"
-                >
-                  {user?.name?.[0]?.toUpperCase() || "A"}
-                </button>
-              </div>
-            </div>
-          </div>
+        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+          <ApplicantNavbar />
         </header>
 
         <main className="p-6">
@@ -305,7 +264,7 @@ const JobSeekerDashboardPage = () => {
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder="Search by job title or company name..."
-                className="w-full pl-12 pr-4 py-3 border border-border rounded-lg focus:outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 bg-card text-foreground"
+                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 focus:ring-1 focus:ring-chart-1 bg-white text-foreground"
               />
             </form>
             <button
@@ -324,7 +283,7 @@ const JobSeekerDashboardPage = () => {
                 showFilters ? "block" : "hidden lg:block"
               }`}
             >
-              <div className="bg-card rounded-xl border border-border p-6 sticky top-24">
+              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-24">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="text-lg text-foreground">Filters</h3>
                   {showFilters && (
@@ -348,7 +307,7 @@ const JobSeekerDashboardPage = () => {
                       onChange={(e) =>
                         handleFilterChange("employmentType", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
                     >
                       <option value="">All Types</option>
                       <option value="full-time">Full-time</option>
@@ -368,7 +327,7 @@ const JobSeekerDashboardPage = () => {
                       onChange={(e) =>
                         handleFilterChange("remote", e.target.value)
                       }
-                      className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
                     >
                       <option value="">All</option>
                       <option value="true">Remote</option>
@@ -388,7 +347,7 @@ const JobSeekerDashboardPage = () => {
                         handleFilterChange("salaryMin", e.target.value)
                       }
                       placeholder="e.g., 30000"
-                      className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
                     />
                   </div>
 
@@ -403,7 +362,7 @@ const JobSeekerDashboardPage = () => {
                         handleFilterChange("salaryMax", e.target.value)
                       }
                       placeholder="e.g., 80000"
-                      className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-chart-1 bg-card text-foreground"
                     />
                   </div>
                 </div>
