@@ -1,3 +1,4 @@
+// src/App.jsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/auth/LoginPage";
@@ -10,9 +11,13 @@ import ResetPassPage from "./pages/auth/ResetPassPage";
 import LandingPage from "./pages/landingPage/LandingPage";
 import EmployerDashboardPage from "./pages/dashboard/EmployerDashboardPage";
 import PostJobPage from "./pages/dashboard/PostJobPage";
+import JobListingsPage from "./pages/jobs/JobListingsPage";
+import JobDetailsPage from "./pages/jobs/JobDetailsPage";
 import EmployerProfile from "./pages/profiles/EmployerProfile";
+import ApplicationsPage from "./pages/dashboard/ApplicationsPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import useAuth from "./hooks/useAuth";
+import JobSeekerDashboardPage from "./pages/dashboard/JobSeekerDashboardPage";
 
 // 404 Not Found component
 const NotFound = () => {
@@ -26,26 +31,6 @@ const NotFound = () => {
           className="px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
         >
           Go to Login
-        </button>
-      </div>
-    </div>
-  );
-};
-
-// ✅ ADD: Temporary Applicant Dashboard (placeholder)
-const ApplicantDashboardPage = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          Applicant Dashboard
-        </h1>
-        <p className="text-gray-600 mb-8">This page is under construction.</p>
-        <button
-          onClick={() => (window.location.href = "/login")}
-          className="px-6 py-3 bg-chart-1 text-white rounded-lg hover:opacity-90"
-        >
-          Back to Login
         </button>
       </div>
     </div>
@@ -69,6 +54,24 @@ const App = () => {
         <Route
           path="/forgot-password-success"
           element={<ForgotPassSuccessPage />}
+        />
+
+        {/* Job Browsing - Public/Protected */}
+        <Route
+          path="/jobs"
+          element={
+            <ProtectedRoute>
+              <JobListingsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/jobs/:jobId"
+          element={
+            <ProtectedRoute>
+              <JobDetailsPage />
+            </ProtectedRoute>
+          }
         />
 
         {/* Employer Protected Routes */}
@@ -97,17 +100,33 @@ const App = () => {
           }
         />
 
-        {/* ✅ ADD: Applicant Protected Routes */}
+        {/* Applicant Protected Routes */}
         <Route
           path="/applicant-dashboard"
           element={
             <ProtectedRoute requireApplicant={true}>
-              <ApplicantDashboardPage />
+              <JobSeekerDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/applications"
+          element={
+            <ProtectedRoute requireApplicant={true}>
+              <ApplicationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/saved-jobs"
+          element={
+            <ProtectedRoute requireApplicant={true}>
+              <SavedJobsPlaceholder />
             </ProtectedRoute>
           }
         />
 
-        {/* ✅ FIX: Smart /dashboard redirect based on role */}
+        {/* Smart /dashboard redirect based on role */}
         <Route
           path="/dashboard"
           element={
@@ -127,7 +146,7 @@ const App = () => {
   );
 };
 
-// ✅ ADD: Smart redirect component that checks user role
+// Smart redirect component that checks user role
 const SmartDashboardRedirect = () => {
   const { user, loading } = useAuth();
 
@@ -148,6 +167,24 @@ const SmartDashboardRedirect = () => {
   }
 
   return <Navigate to="/login" replace />;
+};
+
+// Temporary placeholder for Saved Jobs
+const SavedJobsPlaceholder = () => {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="text-center">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">Saved Jobs</h1>
+        <p className="text-gray-600 mb-8">This feature is coming soon.</p>
+        <button
+          onClick={() => (window.location.href = "/jobs")}
+          className="px-6 py-3 bg-chart-1 text-white rounded-lg hover:opacity-90"
+        >
+          Browse Jobs
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export default App;
