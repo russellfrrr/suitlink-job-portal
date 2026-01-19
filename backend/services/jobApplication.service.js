@@ -5,14 +5,10 @@ import CompanyProfile from "../models/CompanyProfile.js";
 import NotificationService from "./notification.service.js";
 
 /*
-  NOTE: This service now requires applicant profile to exist.
-  Frontend should check for profile and show setup modal if not found.
-*/
-
-/*
   ENDPOINTS (api/v1/applications)
     POST /
     GET /job/:jobPostingId
+    GET /:applicationId
     PATCH /:applicationId/status
     GET /me
 */
@@ -82,9 +78,33 @@ class JobApplicationService {
     return JobApplication.find({ jobPosting: jobPostingId })
       .populate({
         path: "applicant",
-        select: "firstName lastName skills experience resumeAnalysis",
+        select: "firstName lastName skills experience resumeAnalysis profileImage location",
       })
       .sort({ createdAt: -1 });
+  }
+
+  // GET /:applicationId
+  static async getApplicationDetail(applicationId, employerUserId) {
+    const application = await JobApplication.findById(applicationId)
+      .populate({
+        path: "applicant",
+        select: "firstName lastName skills experience education resumes resumeAnalysis profileImage location phone",
+      })
+      .populate({
+        path: "jobPosting",
+        select: "title location employmentType",
+      });
+
+    if (!application) {
+      throw new Error("Application not found");
+    }
+
+    // Verify employer owns this application
+    if (application.employer.toString() !== employerUserId.toString()) {
+      throw new Error("Unauthorized access to application details");
+    }
+
+    return application;
   }
 
   // PATCH /:applicationId/status

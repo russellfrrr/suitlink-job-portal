@@ -14,24 +14,18 @@ const ApplicantNavbar = () => {
   const { profile, refreshProfile, loading: profileLoading } = useProfile();
 
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const menuRef = useRef(null);
 
-  console.log("🎨 ApplicantNavbar render:", {
-    userId: user?._id,
-    hasProfile: !!profile,
-    profileImage: profile?.profileImage,
-    firstName: profile?.firstName,
-    lastName: profile?.lastName,
-    profileLoading,
-  });
-
-  // CRITICAL FIX 1: Refresh profile when user changes
   useEffect(() => {
     if (user?._id && refreshProfile && typeof refreshProfile === 'function') {
-      console.log("🔄 User changed, refreshing profile for:", user._id);
       refreshProfile();
     }
-  }, [user?._id]);
+  }, [user?._id]); // Only when user ID changes
+
+  useEffect(() => {
+    setImageError(false);
+  }, [profile?.profileImage?.url]);
 
   // Close menu handlers
   useEffect(() => {
@@ -61,32 +55,28 @@ const ApplicantNavbar = () => {
         : "text-gray-500 border-transparent hover:text-emerald-600 hover:border-emerald-600"
     }`;
 
-  // CRITICAL FIX 2: Simplified avatar display with correct priority chain
   const renderAvatar = () => {
-    console.log("🖼️ Rendering avatar:", {
-      profileImageUrl: profile?.profileImage?.url,
-      firstName: profile?.firstName,
-      lastName: profile?.lastName,
-      userName: user?.name,
-    });
+    // Get the avatar URL (single source of truth)
+    const avatarUrl = profile?.profileImage?.url;
 
-    // Priority 1: Profile image URL from backend
-    if (profile?.profileImage?.url) {
+    if (avatarUrl && !imageError) {
       return (
         <img
-          src={profile.profileImage.url}
+          src={avatarUrl}
           alt="Profile"
           className="w-full h-full object-cover"
-          onError={(e) => {
-            console.error("❌ Image load failed:", profile.profileImage.url);
-            // Hide broken image on error
-            e.target.style.display = "none";
+          onError={() => {
+            console.warn("Image load failed:", avatarUrl);
+            setImageError(true); // Trigger re-render to fallback
+          }}
+          onLoad={() => {
+            console.log("Image loaded successfully:", avatarUrl);
           }}
         />
       );
     }
 
-    // Priority 2: Initials from profile (firstName + lastName)
+
     if (profile?.firstName || profile?.lastName) {
       const initials = `${profile.firstName?.[0] || ""}${profile.lastName?.[0] || ""}`.toUpperCase();
       return (
@@ -96,7 +86,7 @@ const ApplicantNavbar = () => {
       );
     }
 
-    // Priority 3: Fallback to user name initial
+
     if (user?.name) {
       return (
         <span className="text-sm font-medium text-white">
@@ -120,6 +110,17 @@ const ApplicantNavbar = () => {
       setShowAvatarMenu(false);
       navigate("/login");
     }
+  };
+
+  // ✅ FIX 4: Display name with proper fallback chain
+  const getDisplayName = () => {
+    if (profile?.firstName && profile?.lastName) {
+      return `${profile.firstName} ${profile.lastName}`;
+    }
+    if (user?.name) {
+      return user.name;
+    }
+    return "Account";
   };
 
   return (
@@ -166,8 +167,9 @@ const ApplicantNavbar = () => {
                 aria-expanded={showAvatarMenu}
                 className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
               >
-                {profileLoading ? (
-                  <span className="text-sm font-medium text-white">...</span>
+                {/* ✅ FIX 5: Show skeleton only on initial load */}
+                {profileLoading && !profile ? (
+                  <span className="text-sm font-medium text-white animate-pulse">...</span>
                 ) : (
                   renderAvatar()
                 )}
@@ -180,9 +182,7 @@ const ApplicantNavbar = () => {
                 >
                   <div className="px-3 py-2 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {profile?.firstName && profile?.lastName
-                        ? `${profile.firstName} ${profile.lastName}`
-                        : user?.name || "Account"}
+                      {getDisplayName()}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
                       {user?.email || ""}

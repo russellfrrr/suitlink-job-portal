@@ -8,10 +8,11 @@ export const ApplicantProfileProvider = ({ children, user }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
   const fetchProfile = useCallback(async () => {
     // Only fetch if user exists and is an applicant
     if (!user || user.role !== 'applicant') {
-      console.log("❌ Not fetching: user is not applicant", { user: user?.role });
+      console.log("Not fetching: user is not applicant", { user: user?.role });
       setProfile(null);
       setLoading(false);
       return;
@@ -28,18 +29,19 @@ export const ApplicantProfileProvider = ({ children, user }) => {
 
       if (profileResponse.success) {
         const fetchedProfile = profileResponse.data;
-        console.log("✅ Profile fetched:", {
+        console.log("Profile fetched:", {
           firstName: fetchedProfile?.firstName,
           lastName: fetchedProfile?.lastName,
           profileImage: fetchedProfile?.profileImage,
         });
-        setProfile(fetchedProfile);
+
+        setProfile({ ...fetchedProfile });
       } else {
-        console.warn("⚠️ Profile response not successful:", profileResponse);
+        console.warn("Profile response not successful:", profileResponse);
         setProfile(null);
       }
     } catch (err) {
-      console.error("❌ Error fetching applicant profile:", err);
+      console.error("Error fetching applicant profile:", err);
       setError(err.message);
       setProfile(null);
     } finally {
@@ -48,7 +50,7 @@ export const ApplicantProfileProvider = ({ children, user }) => {
   }, [user?._id, user?.role]);
 
   const refreshProfile = useCallback(async () => {
-    console.log("🔄 Refresh profile called");
+    console.log("🔄 Refresh profile called - forcing new fetch");
     await fetchProfile();
   }, [fetchProfile]);
 
@@ -73,26 +75,26 @@ export const ApplicantProfileProvider = ({ children, user }) => {
     };
   }, []);
 
-  // 🔍 Debug: Log state changes
   useEffect(() => {
     console.log("📊 ApplicantProfileContext state:", {
       hasProfile: !!profile,
       loading,
       error,
-      profileImage: profile?.profileImage?.url,
+      profileImageUrl: profile?.profileImage?.url,
+      timestamp: new Date().toISOString(),
     });
   }, [profile, loading, error]);
 
+  const contextValue = {
+    profile,
+    loading,
+    error,
+    refreshProfile,
+    clearProfile,
+  };
+
   return (
-    <ApplicantProfileContext.Provider
-      value={{
-        profile,
-        loading,
-        error,
-        refreshProfile,
-        clearProfile,
-      }}
-    >
+    <ApplicantProfileContext.Provider value={contextValue}>
       {children}
     </ApplicantProfileContext.Provider>
   );
