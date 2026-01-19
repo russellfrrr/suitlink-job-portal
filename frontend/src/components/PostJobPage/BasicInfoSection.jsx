@@ -8,18 +8,21 @@ const BasicInfoSection = ({ formData, onChange, errors }) => {
 
   return (
     <FormSection title="Basic Information">
-      <div className="space-y-4">
+      <div className="space-y-5">
+
+        {/* Job Title */}
         <InputField
           id="jobTitle"
           label="Job Title"
           value={formData.jobTitle}
           onChange={(e) => onChange("jobTitle", e.target.value)}
-          placeholder="e.g. Senior UX Designer"
+          placeholder="e.g., Senior UX Designer"
           required
           error={errors.jobTitle}
         />
 
-        <div className="grid grid-cols-2 gap-4">
+        {/* Job Type + Work Style */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <SelectField
             id="jobType"
             label="Job Type"
@@ -41,37 +44,44 @@ const BasicInfoSection = ({ formData, onChange, errors }) => {
           />
         </div>
 
+        {/* Location */}
         <InputField
           id="location"
           label="Location"
           value={formData.location}
           onChange={(e) => onChange("location", e.target.value)}
-          placeholder="e.g. San Francisco, CA"
+          placeholder="e.g., Makati City"
           required
           error={errors.location}
         />
 
+        {/* Salary Range */}
         <div>
-          <label className="block text-sm text-gray-700 mb-2">
-            Salary Range <span className="text-gray-700">*</span>
+          <label
+            htmlFor="salaryMin"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Salary Range <span className="text-red-500">*</span>
           </label>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <InputField
               id="salaryMin"
-              label=""
               type="number"
+              label=""
               value={formData.salaryMin}
               onChange={(e) => onChange("salaryMin", e.target.value)}
-              placeholder="Minimum"
+              placeholder="Minimum (PHP)"
               error={errors.salaryMin}
             />
+
             <InputField
               id="salaryMax"
-              label=""
               type="number"
+              label=""
               value={formData.salaryMax}
               onChange={(e) => onChange("salaryMax", e.target.value)}
-              placeholder="Maximum"
+              placeholder="Maximum (PHP)"
               error={errors.salaryMax}
             />
           </div>

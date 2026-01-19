@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { ProfileProvider } from "./context/ProfileContext";
+import { UnifiedProfileProvider } from "./context/ProfileContext";
 import LoginPage from "./pages/auth/LoginPage";
 import SignUpPage from "./pages/auth/SignUpPage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
@@ -19,6 +19,8 @@ import ApplicationsPage from "./pages/dashboard/ApplicationsPage";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import useAuth from "./hooks/useAuth";
 import JobSeekerDashboardPage from "./pages/dashboard/JobSeekerDashboardPage";
+import EmployerApplicantsPage from "./pages/dashboard/EmployerApplicantsPage";
+import JobApplicantsPage from "./pages/dashboard/JobApplicantsPage";
 
 const NotFound = () => {
   return (
@@ -40,7 +42,7 @@ const NotFound = () => {
 const App = () => {
   return (
     <BrowserRouter>
-      <ProfileProvider>
+      <UnifiedProfileProvider>
         <Routes>
           {/* Public Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -74,7 +76,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           {/* Employer Protected Routes */}
           <Route
             path="/employer-dashboard"
@@ -100,6 +101,14 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+  path="/employer/my-jobs"
+  element={
+    <ProtectedRoute requireEmployer>
+      <EmployerDashboardPage />
+    </ProtectedRoute>
+  }
+/>
 
           {/* Applicant Protected Routes */}
           <Route
@@ -126,6 +135,22 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+  path="/employer/applicants"
+  element={
+    <ProtectedRoute requireEmployer={true}>
+      <EmployerApplicantsPage />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/employer/jobs/:jobId/applicants"
+  element={
+    <ProtectedRoute requireEmployer={true}>
+      <JobApplicantsPage />
+    </ProtectedRoute>
+  }
+/>
 
           {/* Smart /dashboard redirect based on role */}
           <Route
@@ -143,7 +168,7 @@ const App = () => {
           {/* 404 - Catch all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
-      </ProfileProvider>
+      </UnifiedProfileProvider>
     </BrowserRouter>
   );
 };

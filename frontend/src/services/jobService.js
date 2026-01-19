@@ -1,9 +1,9 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8888/api/v1/jobs";
+const API_BASE_URL = `http://localhost:8888/api/v1/jobs`;
 
-// Create axios instance with credentials
-const jobApi = axios.create({
+// Create axios instance for job-specific endpoints
+const jobsApi = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
@@ -12,7 +12,7 @@ const jobApi = axios.create({
 });
 
 // Response interceptor
-jobApi.interceptors.response.use(
+jobsApi.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const message = error.response?.data?.message || "An error occurred";
@@ -23,37 +23,42 @@ jobApi.interceptors.response.use(
 export const jobService = {
   // Create a new job posting
   createJob: async (jobData) => {
-    return jobApi.post("/", jobData);
+    return jobsApi.post("/", jobData);
   },
 
-  // Get all jobs (public)
-  getJobs: async (params = {}) => {
-    return jobApi.get("/", { params });
+  // Update existing job
+  updateJob: async (jobId, jobData) => {
+    return jobsApi.patch(`/${jobId}`, jobData);
   },
 
   // Get job by ID
   getJobById: async (jobId) => {
-    return jobApi.get(`/${jobId}`);
+    return jobsApi.get(`/${jobId}`);
   },
 
-  // Get employer's own jobs
-  getMyJobs: async () => {
-    return jobApi.get("/my-jobs");
+  // Get all jobs for current employer (CORRECTED)
+  getMyJobs: async (params = {}) => {
+    return jobsApi.get("/my-jobs", { params });
   },
 
-  // Update job
-  updateJob: async (jobId, jobData) => {
-    return jobApi.patch(`/${jobId}`, jobData);
+  // Delete job
+  deleteJob: async (jobId) => {
+    return jobsApi.delete(`/${jobId}`);
   },
 
   // Close job posting
   closeJob: async (jobId) => {
-    return jobApi.patch(`/${jobId}/close`);
+    return jobsApi.patch(`/${jobId}/close`);
   },
 
-  // Reopen job posting
+  // Reopen closed job posting
   reopenJob: async (jobId) => {
-    return jobApi.patch(`/${jobId}/open`);
+    return jobsApi.patch(`/${jobId}/open`);
+  },
+
+  // Get all jobs (public browsing)
+  getJobs: async (params = {}) => {
+    return jobsApi.get("/", { params });
   },
 };
 

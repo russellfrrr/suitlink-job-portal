@@ -1,39 +1,18 @@
 import { useEffect, useRef, useState } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, Plus } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useProfile } from "../../context/ProfileContext";
 import useAuth from "../../hooks/useAuth";
 import Logo from "../Auth/Shared/Logo";
 import { authService } from "../../services/authService";
-import NotificationsBell from "../Notifications/NotificationsBell";
 
-const ApplicantNavbar = () => {
+const EmployerNavbar = ({ companyProfile, onPostJob, bellSlot }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
-  const { profile, refreshProfile, loading: profileLoading } = useProfile();
 
   const [showAvatarMenu, setShowAvatarMenu] = useState(false);
   const menuRef = useRef(null);
 
-  console.log("🎨 ApplicantNavbar render:", {
-    userId: user?._id,
-    hasProfile: !!profile,
-    profileImage: profile?.profileImage,
-    firstName: profile?.firstName,
-    lastName: profile?.lastName,
-    profileLoading,
-  });
-
-  // CRITICAL FIX 1: Refresh profile when user changes
-  useEffect(() => {
-    if (user?._id && refreshProfile && typeof refreshProfile === 'function') {
-      console.log("🔄 User changed, refreshing profile for:", user._id);
-      refreshProfile();
-    }
-  }, [user?._id]);
-
-  // Close menu handlers
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!menuRef.current) return;
@@ -52,6 +31,10 @@ const ApplicantNavbar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setShowAvatarMenu(false);
+  }, [location.pathname]);
+
   const isActiveRoute = (path) => location.pathname === path;
 
   const navItemClass = (path) =>
@@ -61,54 +44,23 @@ const ApplicantNavbar = () => {
         : "text-gray-500 border-transparent hover:text-emerald-600 hover:border-emerald-600"
     }`;
 
-  // CRITICAL FIX 2: Simplified avatar display with correct priority chain
-  const renderAvatar = () => {
-    console.log("🖼️ Rendering avatar:", {
-      profileImageUrl: profile?.profileImage?.url,
-      firstName: profile?.firstName,
-      lastName: profile?.lastName,
-      userName: user?.name,
-    });
-
-    // Priority 1: Profile image URL from backend
-    if (profile?.profileImage?.url) {
+  const getAvatarDisplay = () => {
+    if (companyProfile?.logo?.url) {
       return (
         <img
-          src={profile.profileImage.url}
-          alt="Profile"
+          src={companyProfile.logo.url}
+          alt="Company"
           className="w-full h-full object-cover"
-          onError={(e) => {
-            console.error("❌ Image load failed:", profile.profileImage.url);
-            // Hide broken image on error
-            e.target.style.display = "none";
-          }}
         />
       );
     }
 
-    // Priority 2: Initials from profile (firstName + lastName)
-    if (profile?.firstName || profile?.lastName) {
-      const initials = `${profile.firstName?.[0] || ""}${profile.lastName?.[0] || ""}`.toUpperCase();
-      return (
-        <span className="text-sm font-medium text-white">
-          {initials}
-        </span>
-      );
-    }
+    const initials =
+      companyProfile?.companyName?.[0]?.toUpperCase() ||
+      user?.name?.[0]?.toUpperCase() ||
+      "C";
 
-    // Priority 3: Fallback to user name initial
-    if (user?.name) {
-      return (
-        <span className="text-sm font-medium text-white">
-          {user.name[0].toUpperCase()}
-        </span>
-      );
-    }
-
-    // Final fallback
-    return (
-      <span className="text-sm font-medium text-white">A</span>
-    );
+    return <span className="text-sm font-medium text-white">{initials}</span>;
   };
 
   const handleLogout = async () => {
@@ -126,28 +78,36 @@ const ApplicantNavbar = () => {
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="px-6 py-4">
         <div className="flex items-center justify-between">
-          <Logo to="/applicant-dashboard" />
+          <Logo to="/employer-dashboard" />
 
           <nav className="hidden md:flex items-center gap-6">
             <button
-              onClick={() => navigate("/applicant-dashboard")}
-              className={navItemClass("/applicant-dashboard")}
+              onClick={() => navigate("/employer-dashboard")}
+              className={navItemClass("/employer-dashboard")}
               type="button"
             >
-              Find Jobs
+              Dashboard
             </button>
 
             <button
-              onClick={() => navigate("/applications")}
-              className={navItemClass("/applications")}
+              onClick={() => navigate("/employer/my-jobs")}
+              className={navItemClass("/employer/my-jobs")}
               type="button"
             >
-              Applications
+              My Jobs
             </button>
 
             <button
-              onClick={() => navigate("/applicant-profile")}
-              className={navItemClass("/applicant-profile")}
+              onClick={() => navigate("/employer/applicants")}
+              className={navItemClass("/employer/applicants")}
+              type="button"
+            >
+              Applicants
+            </button>
+
+            <button
+              onClick={() => navigate("/employer-profile")}
+              className={navItemClass("/employer-profile")}
               type="button"
             >
               Profile
@@ -155,8 +115,18 @@ const ApplicantNavbar = () => {
           </nav>
 
           <div className="flex items-center gap-4">
-            {/* Notifications Bell */}
-            <NotificationsBell />
+            {onPostJob && (
+              <button
+                onClick={onPostJob}
+                className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition"
+                type="button"
+              >
+                <Plus className="w-4 h-4" />
+                <span className="text-sm font-medium">Post Job</span>
+              </button>
+            )}
+
+            {bellSlot}
 
             <div className="relative" ref={menuRef}>
               <button
@@ -164,30 +134,36 @@ const ApplicantNavbar = () => {
                 type="button"
                 aria-haspopup="menu"
                 aria-expanded={showAvatarMenu}
-                className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center overflow-hidden hover:opacity-90 transition-opacity focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
+                className="w-9 h-9 rounded-full bg-emerald-600 flex items-center justify-center overflow-hidden hover:opacity-90 transition-opacity"
               >
-                {profileLoading ? (
-                  <span className="text-sm font-medium text-white">...</span>
-                ) : (
-                  renderAvatar()
-                )}
+                {getAvatarDisplay()}
               </button>
 
               {showAvatarMenu && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2 w-52 bg-white border border-gray-200 rounded-xl shadow-lg ring-1 ring-black/5 overflow-hidden"
+                  className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg ring-1 ring-black/5 overflow-hidden"
                 >
                   <div className="px-3 py-2 border-b border-gray-100">
                     <p className="text-sm font-medium text-gray-900 truncate">
-                      {profile?.firstName && profile?.lastName
-                        ? `${profile.firstName} ${profile.lastName}`
-                        : user?.name || "Account"}
+                      {companyProfile?.companyName || user?.name || "Account"}
                     </p>
                     <p className="text-xs text-gray-500 truncate">
                       {user?.email || ""}
                     </p>
                   </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowAvatarMenu(false);
+                      navigate("/employer-profile");
+                    }}
+                    className="w-full px-3 py-2.5 text-left text-sm text-gray-700 hover:bg-gray-50"
+                    role="menuitem"
+                  >
+                    Company Profile
+                  </button>
 
                   <button
                     type="button"
@@ -201,6 +177,17 @@ const ApplicantNavbar = () => {
                 </div>
               )}
             </div>
+
+            {onPostJob && (
+              <button
+                onClick={onPostJob}
+                className="md:hidden inline-flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition"
+                type="button"
+                aria-label="Post Job"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -208,4 +195,4 @@ const ApplicantNavbar = () => {
   );
 };
 
-export default ApplicantNavbar;
+export default EmployerNavbar;

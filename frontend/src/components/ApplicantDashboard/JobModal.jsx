@@ -21,7 +21,6 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
   const [coverLetterInput, setCoverLetterInput] = useState("");
   const [hasEditedCoverLetter, setHasEditedCoverLetter] = useState(false);
 
-  // NEW: Track the submitted application data
   const [submittedApplication, setSubmittedApplication] = useState(null);
   const [loadingApplication, setLoadingApplication] = useState(false);
 
@@ -29,7 +28,6 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
     document.body.style.overflow = "hidden";
     fetchUserProfile();
 
-    // NEW: If already applied, fetch the application data
     if (isApplied) {
       fetchApplicationData();
     }
@@ -64,7 +62,6 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
     }
   }, [job, isApplied]);
 
-  // NEW: Fetch application data if already applied
   const fetchApplicationData = async () => {
     if (!job?._id) return;
 
@@ -72,7 +69,7 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
       setLoadingApplication(true);
       const response = await applicationsApiService.getMyApplications({
         page: 1,
-        limit: 1000, // Get all to find this specific job
+        limit: 1000,
       });
 
       if (response.success) {
@@ -80,14 +77,12 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
           ? response.data
           : response.data.applications || [];
 
-        // Find the application for this specific job
         const thisApplication = applications.find(
           (app) => (app.jobPosting?._id || app.jobPosting) === job._id
         );
 
         if (thisApplication) {
           setSubmittedApplication(thisApplication);
-          // Set the cover letter from the actual application
           setCoverLetterInput(thisApplication.coverLetter || "");
         }
       }
@@ -106,7 +101,6 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
       if (response.success && response.data) {
         setUserProfile(response.data);
 
-        // Only use profile cover letter as default for NEW applications
         if (!isApplied && !hasEditedCoverLetter) {
           setCoverLetterInput(response.data.coverLetter || "");
         }
@@ -147,10 +141,8 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
       );
 
       if (response.success) {
-        // CRITICAL: Store the backend response as the source of truth
         setSubmittedApplication(response.data);
 
-        // Update cover letter from backend response
         setCoverLetterInput(response.data.coverLetter || "");
 
         setApplied(true);
@@ -167,7 +159,6 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
       if (err.message.includes("already applied")) {
         setError("You have already applied to this position");
         setApplied(true);
-        // Fetch the actual application data
         fetchApplicationData();
       } else if (err.message.includes("profile")) {
         setError("Please complete your applicant profile first");
@@ -211,7 +202,6 @@ const JobModal = ({ job, onClose, isApplied = false, onApplySuccess }) => {
     !loadingApplication &&
     userProfile?.resumes?.length > 0;
 
-  // Determine if we should show the cover letter in view mode (already applied)
   const isViewMode = applied && submittedApplication;
   const displayCoverLetter = isViewMode
     ? submittedApplication.coverLetter

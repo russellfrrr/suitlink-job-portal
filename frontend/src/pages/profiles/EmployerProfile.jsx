@@ -1,40 +1,39 @@
+// frontend/src/pages/profiles/EmployerProfile.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Briefcase, Bell } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import companyService from "../../services/companyService";
+
+import EmployerNavbar from "../../components/EmployerDashboard/EmployerNavBar";
+import EditCompanyProfileModal from "../../components/EmployerProfile/EditCompanyProfileModal";
+import NotificationsBell from "../../components/Notifications/NotificationsBell";
+
 import ProfileHeader from "../../components/EmployerProfile/ProfileHeader";
 import AboutCompany from "../../components/EmployerProfile/AboutCompany";
-import BenefitsPerks from "../../components/EmployerProfile/BenefitsPerks";
 import ContactInfo from "../../components/EmployerProfile/ContactInfo";
 import IndustryInfo from "../../components/EmployerProfile/IndustryInfo";
-import CompanySize from "../../components/EmployerProfile/CompanySize";
-import EditCompanyProfileModal from "../../components/EmployerProfile/EditCompanyProfileModal";
-import Logo from "../../components/Auth/Shared/Logo";
+import WhyWorkWithUs from "../../components/EmployerProfile/WhyWorkWithUs";
+import CompanyCulture from "../../components/EmployerProfile/CompanyCulture";
 
 const EmployerProfile = () => {
   const navigate = useNavigate();
   const { user, loading: authLoading, isEmployer } = useAuth();
-  const [showEditModal, setShowEditModal] = useState(false);
+
   const [companyProfile, setCompanyProfile] = useState(null);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check auth and role
+  // Redirect if user is not employer
   useEffect(() => {
     if (!authLoading) {
-      if (!user) {
-        navigate("/login");
-      } else if (!isEmployer) {
-        navigate("/applicant-dashboard");
-      }
+      if (!user) navigate("/login");
+      else if (!isEmployer) navigate("/applicant-dashboard");
     }
   }, [user, authLoading, isEmployer, navigate]);
 
   // Fetch company profile
   useEffect(() => {
-    if (user && isEmployer) {
-      fetchCompanyProfile();
-    }
+    if (user && isEmployer) fetchCompanyProfile();
   }, [user, isEmployer]);
 
   const fetchCompanyProfile = async () => {
@@ -45,41 +44,27 @@ const EmployerProfile = () => {
       if (response.success && response.data) {
         setCompanyProfile(response.data);
       } else {
-        // No profile exists - redirect to dashboard to complete setup
         navigate("/employer-dashboard");
       }
-    } catch (err) {
-      console.error("Failed to fetch company profile:", err);
-      // On error, redirect to dashboard
+    } catch (error) {
+      console.error("Failed to load profile:", error);
       navigate("/employer-dashboard");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditSuccess = (updatedProfile) => {
-    // Update local state with the updated profile
-    setCompanyProfile(updatedProfile);
+  const handleEditSuccess = (updated) => {
+    setCompanyProfile(updated);
   };
 
-  if (authLoading || loading) {
+  // CRITICAL FIX: Only show loading during auth check, not profile fetch
+  if (authLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-chart-1 mx-auto"></div>
-          <p className="text-gray-600 mt-4">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!companyProfile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <p className="text-gray-600">
-            No company profile found. Redirecting...
-          </p>
+          <div className="animate-spin h-12 w-12 rounded-full border-b-2 border-emerald-600 mx-auto"></div>
+          <p className="text-gray-600 mt-4">Loading...</p>
         </div>
       </div>
     );
@@ -96,60 +81,118 @@ const EmployerProfile = () => {
       )}
 
       <div className="min-h-screen bg-gray-50">
-        {/* Header */}
-        <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-          <div className="px-6 py-4">
-            <div className="flex items-center justify-between">
-              <Logo />
+        {/* CRITICAL FIX: Pass companyProfile to navbar even if loading */}
+        <EmployerNavbar
+          companyProfile={companyProfile}
+          bellSlot={<NotificationsBell />}
+        />
 
-              {/* Navigation */}
-              <nav className="hidden md:flex items-center gap-6">
-                <button
-                  onClick={() => navigate("/employer-dashboard")}
-                  className="text-sm font-medium text-gray-600 hover:text-gray-900 py-1"
-                >
-                  Dashboard
-                </button>
-                <button className="text-sm font-medium text-chart-1 border-b-2 border-chart-1 py-1">
-                  Profile
-                </button>
-              </nav>
+        <main className="max-w-6xl mx-auto p-6">
+          {/* Show skeleton/loading state for profile content only */}
+          {loading ? (
+            <div className="space-y-6">
+              {/* Profile Header Skeleton */}
+              <div className="bg-white rounded-xl border border-gray-200">
+                <div className="h-32 bg-gradient-to-r from-chart-1 to-emerald-800 rounded-t-xl animate-pulse" />
+                <div className="px-8 pb-8">
+                  <div className="flex items-end justify-between -mt-16 mb-6">
+                    <div className="flex items-end gap-4">
+                      <div className="w-32 h-32 rounded-xl bg-gray-200 animate-pulse" />
+                      <div className="pb-2 space-y-2">
+                        <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+                        <div className="h-6 w-32 bg-gray-200 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <div className="flex items-center gap-4">
-                <button className="relative">
-                  <Bell className="size-5 text-gray-600 hover:text-gray-900" />
-                </button>
-                <div className="w-9 h-9 rounded-full bg-chart-1 flex items-center justify-center text-white text-sm">
-                  {companyProfile.companyName?.[0] || "C"}
+              {/* Content Skeletons */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <div className="h-6 w-32 bg-gray-200 rounded mb-4 animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-4 w-3/4 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-6">
+                  <div className="bg-white rounded-xl border border-gray-200 p-6">
+                    <div className="h-6 w-24 bg-gray-200 rounded mb-4 animate-pulse" />
+                    <div className="space-y-2">
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </header>
+          ) : companyProfile ? (
+            <>
+              {/* Top Profile Banner */}
+              <ProfileHeader
+                companyProfile={companyProfile}
+                onEdit={() => setShowEditModal(true)}
+              />
 
-        <div className="max-w-5xl mx-auto p-6">
-          {/* Profile Header with Edit Button */}
-          <ProfileHeader
-            companyProfile={companyProfile}
-            onEdit={() => setShowEditModal(true)}
-          />
+              {/* Page layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                {/* LEFT COLUMN — Main details */}
+                <div className="lg:col-span-2 space-y-6">
+                  <AboutCompany companyProfile={companyProfile} />
+                  <WhyWorkWithUs companyProfile={companyProfile} />
+                  <CompanyCulture companyProfile={companyProfile} />
+                </div>
 
-          {/* Company Info */}
-          <div className="grid grid-cols-3 gap-6">
-            {/* Main Content */}
-            <div className="col-span-2 space-y-6">
-              <AboutCompany companyProfile={companyProfile} />
-              <BenefitsPerks />
-            </div>
+                {/* RIGHT COLUMN — Sidebar */}
+                <aside className="space-y-6">
+                  <ContactInfo companyProfile={companyProfile} />
+                  <IndustryInfo companyProfile={companyProfile} />
 
-            {/* Sidebar */}
-            <div className="space-y-6">
-              <ContactInfo companyProfile={companyProfile} />
-              <IndustryInfo companyProfile={companyProfile} />
-              <CompanySize companyProfile={companyProfile} />
-            </div>
-          </div>
-        </div>
+                  {/* Company Highlight Card */}
+                  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                    <h3 className="text-lg font-medium text-gray-900 mb-3">
+                      Company Highlights
+                    </h3>
+
+                    <ul className="space-y-3 text-sm text-gray-700">
+                      <li className="flex items-start gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-600 mt-1.5"></span>
+                        <span>
+                          Trusted by <strong>{companyProfile.metrics?.totalApplicants || 0}</strong>{" "}
+                          applicants across multiple job postings.
+                        </span>
+                      </li>
+
+                      <li className="flex items-start gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-600 mt-1.5"></span>
+                        <span>
+                          {companyProfile.credibilityScore >= 6 ? (
+                            <>Verified &nbsp;<strong>High-Credibility Employer</strong></>
+                          ) : (
+                            <>Strong growth potential in employer credibility.</>
+                          )}
+                        </span>
+                      </li>
+
+                      <li className="flex items-start gap-2">
+                        <span className="h-2 w-2 rounded-full bg-emerald-600 mt-1.5"></span>
+                        <span>
+                          Actively hiring:{" "}
+                          <strong>{companyProfile.metrics?.activeJobsCount || 0}</strong>{" "}
+                          open positions.
+                        </span>
+                      </li>
+                    </ul>
+                  </div>
+                </aside>
+              </div>
+            </>
+          ) : null}
+        </main>
       </div>
     </>
   );

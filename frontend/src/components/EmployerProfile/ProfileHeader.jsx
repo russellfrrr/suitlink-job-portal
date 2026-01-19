@@ -32,8 +32,7 @@ const ProfileHeader = ({ companyProfile, onEdit }) => {
                 {companyProfile?.companyName || "Company Name"}
               </h1>
               <p className="text-gray-600 mb-2">
-                {companyProfile?.industry || "Industry"} •{" "}
-                {companyProfile?.companySize || "Company Size"}
+                {companyProfile?.industry || "Industry"}
               </p>
               <div className="flex items-center gap-4 text-sm text-gray-600">
                 <div className="flex items-center gap-1">
