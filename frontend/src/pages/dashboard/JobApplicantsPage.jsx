@@ -19,7 +19,6 @@ import NotificationsBell from "../../components/Notifications/NotificationsBell"
 import companyService from "../../services/companyService";
 import ApplicantAvatar from "../../components/Avatar/ApplicantAvatar";
 
-// Footer Ad Component
 const FooterAd = () => (
   <div className="mt-10 bg-emerald-700 text-white rounded-2xl p-6 flex flex-col md:flex-row items-start md:items-center justify-between shadow-md">
     <div className="mb-4 md:mb-0">
@@ -48,7 +47,6 @@ const JobApplicantsPage = () => {
   const [job, setJob] = useState(null);
   const [companyProfile, setCompanyProfile] = useState(null);
   const [jobLoading, setJobLoading] = useState(true);
-  const [statusUpdateSuccess, setStatusUpdateSuccess] = useState(null);
 
   // Filters
   const [filterStatus, setFilterStatus] = useState("all");
@@ -112,9 +110,10 @@ const JobApplicantsPage = () => {
   const handleStatusChange = async (applicationId, newStatus) => {
     const result = await updateStatus(applicationId, newStatus);
     if (result.success) {
-      setStatusUpdateSuccess(applicationId);
-      setTimeout(() => setStatusUpdateSuccess(null), 3000);
     }
+  };
+  const handleViewApplicant = (applicationId) => {
+    navigate(`/employer/applicants/${applicationId}`);
   };
 
   const getStatusColor = (status) => {
@@ -303,23 +302,28 @@ const JobApplicantsPage = () => {
                       )}
                     </div>
 
-                    <div className="lg:w-64">
-                      {transitions.length === 0 ? (
-                        <p className="text-sm text-gray-500 bg-gray-100 p-4 rounded-lg text-center">
-                          No actions available
-                        </p>
-                      ) : (
-                        <div className="space-y-2">
-                          <p className="text-sm font-medium text-gray-700 mb-2">
+                    <div className="lg:w-64 space-y-2">
+                      {/* ✅ UPDATED: View Full Profile Button */}
+                      <button
+                        type="button"
+                        onClick={() => handleViewApplicant(application._id)}
+                        className="w-full px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-medium"
+                      >
+                        View Full Profile
+                      </button>
+
+                      {transitions.length > 0 && (
+                        <>
+                          <p className="text-sm font-medium text-gray-700 mt-4 mb-2">
                             Update Status
                           </p>
-
                           {transitions.map((t) => (
                             <button
                               key={t.value}
                               onClick={() =>
                                 handleStatusChange(application._id, t.value)
                               }
+                              disabled={updating === application._id}
                               className={`w-full px-4 py-2 rounded-lg text-sm font-medium ${
                                 t.value === "accepted"
                                   ? "bg-emerald-600 text-white hover:bg-emerald-700"
@@ -328,10 +332,10 @@ const JobApplicantsPage = () => {
                                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                               }`}
                             >
-                              {t.label}
+                              {updating === application._id ? "Updating..." : t.label}
                             </button>
                           ))}
-                        </div>
+                        </>
                       )}
                     </div>
                   </div>

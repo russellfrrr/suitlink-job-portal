@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
+import { ChevronRight } from "lucide-react";
 import ApplicantAvatar from "../Avatar/ApplicantAvatar";
 
 const RecentApplicantItem = ({ applicant }) => {
@@ -29,6 +30,10 @@ const RecentApplicantItem = ({ applicant }) => {
     } catch {
       return "";
     }
+  };
+
+  const handleViewApplicant = () => {
+    navigate(`/employer/applicants/${applicant.applicationId}`);
   };
 
   const handleViewJobApplicants = () => {
@@ -72,13 +77,22 @@ const RecentApplicantItem = ({ applicant }) => {
           <p className="text-xs text-gray-500 mt-1">{formatTime(applicant?.createdAt)}</p>
         </div>
 
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleViewApplicant}
+            className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition"
+          >
+            View Profile
+          </button>
+
           <button
             type="button"
             onClick={handleViewJobApplicants}
-            className="inline-flex items-center justify-center px-3.5 py-2 rounded-lg text-sm font-medium text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition"
+            className="p-2 rounded-lg hover:bg-gray-100 transition text-gray-600"
+            title="View all applicants for this job"
           >
-            View
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>

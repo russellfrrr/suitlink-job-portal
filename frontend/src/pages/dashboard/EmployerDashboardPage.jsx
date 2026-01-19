@@ -1,4 +1,3 @@
-// frontend/src/pages/dashboard/EmployerDashboardPage.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Plus, Users, Briefcase as BriefcaseIcon } from "lucide-react";

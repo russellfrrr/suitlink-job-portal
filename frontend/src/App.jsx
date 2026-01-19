@@ -21,6 +21,7 @@ import useAuth from "./hooks/useAuth";
 import JobSeekerDashboardPage from "./pages/dashboard/JobSeekerDashboardPage";
 import EmployerApplicantsPage from "./pages/dashboard/EmployerApplicantsPage";
 import JobApplicantsPage from "./pages/dashboard/JobApplicantsPage";
+import ApplicantDetailPage from "./pages/dashboard/ApplicantDetailPage";
 
 const NotFound = () => {
   return (
@@ -106,6 +107,14 @@ const App = () => {
   element={
     <ProtectedRoute requireEmployer>
       <EmployerDashboardPage />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/employer/applicants/:applicationId"
+  element={
+    <ProtectedRoute requireEmployer>
+      <ApplicantDetailPage />
     </ProtectedRoute>
   }
 />

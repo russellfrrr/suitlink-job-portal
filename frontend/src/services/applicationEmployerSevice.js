@@ -31,6 +31,10 @@ export const employerApplicationsService = {
       status,
     });
   },
+
+  getApplicantDetail: async (applicationId) => {
+    return employerApplicationsApi.get(`/${applicationId}`);
+  },
 };
 
 export default employerApplicationsService;
