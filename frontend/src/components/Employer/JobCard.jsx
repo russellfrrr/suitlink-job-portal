@@ -24,7 +24,7 @@ const JobCard = ({
   const formatSalary = (salaryRange) => {
     if (!salaryRange || (!salaryRange.min && !salaryRange.max)) return "Negotiable";
 
-    const currency = salaryRange.currency || "PHP";
+    const currency = salaryRange.currency;
     const min = salaryRange.min ? `${salaryRange.min.toLocaleString()}` : "";
     const max = salaryRange.max ? `${salaryRange.max.toLocaleString()}` : "";
 
