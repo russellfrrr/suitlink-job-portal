@@ -1,10 +1,9 @@
 import axios from "axios";
-
-const API_BASE_URL = "http://localhost:8888/api/v1/applicant";
+import { ENDPOINTS } from "../config/api.config";
 
 // Create axios instance with credentials
 const applicantProfileApi = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: ENDPOINTS.APPLICANT,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

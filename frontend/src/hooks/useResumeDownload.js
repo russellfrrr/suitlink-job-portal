@@ -45,7 +45,6 @@ const useResumeDownload = () => {
       // Transform Cloudinary URL to force download
       const downloadUrl = transformCloudinaryUrl(url);
 
-      // CRITICAL FIX: Fetch WITHOUT credentials to avoid CORS
       // Cloudinary URLs are public and don't need authentication
       const response = await fetch(downloadUrl, {
         method: "GET",

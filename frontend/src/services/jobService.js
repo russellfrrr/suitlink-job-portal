@@ -1,10 +1,9 @@
 import axios from "axios";
-
-const API_BASE_URL = `http://localhost:8888/api/v1/jobs`;
+import { ENDPOINTS } from "../api/api.config";
 
 // Create axios instance for job-specific endpoints
 const jobsApi = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: ENDPOINTS.JOBS,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

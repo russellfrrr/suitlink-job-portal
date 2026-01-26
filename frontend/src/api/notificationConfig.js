@@ -1,9 +1,8 @@
 import axios from "axios";
-
-const API_BASE_URL = "http://localhost:8888/api/v1/notifications";
+import { ENDPOINTS } from "./api.config";
 
 const notificationsApi = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: ENDPOINTS.NOTIFICATIONS,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -19,4 +18,4 @@ notificationsApi.interceptors.response.use(
   }
 );
 
-export default notificationsApi
+export default notificationsApi;
