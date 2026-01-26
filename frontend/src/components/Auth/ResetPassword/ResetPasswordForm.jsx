@@ -1,4 +1,4 @@
-import ErrorMessage from "../Shared/ErrorMessage";
+import ErrorMessage from "../../Shared/ErrorMessage";
 
 const ResetPasswordForm = ({
   newPassword,
