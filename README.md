@@ -186,7 +186,7 @@ This project is licensed under the ISC License.
 
 ## 👥 Team
 
-Developed by **Russell Ferrero**
+Developed by **The Semicolons**
 
 **Russell Ferrero** - Backend / System Design  
 **Jericho Gabarda** - Frontend/ UI/UX Design  
