@@ -24,13 +24,27 @@ const Hero = () => {
 
       <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
-          {/* Job Opportunities Badge */}
+
+          {/* NEW PORTRAIT BADGE */}
           <div className="inline-flex items-center gap-3">
             <div className="flex -space-x-2">
-              <div className="w-8 h-8 rounded-full bg-emerald-200 border-2 border-white"></div>
-              <div className="w-8 h-8 rounded-full bg-emerald-200 border-2 border-white"></div>
-              <div className="w-8 h-8 rounded-full bg-emerald-200 border-2 border-white"></div>
+              <img
+                src="https://shared-app-space.sgp1.digitaloceanspaces.com/pps-prod/480-person-malupiton-2025-06-20-001.jpg"
+                alt="user"
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+              />
+              <img
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNpolMSUu5vOmgyW4HI3Tvl3sT_pwdCL6byQ&s"
+                alt="user"
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+              />
+              <img
+                src="https://cdn.balita.net.ph/balitta/uploads/images/2024/12/01/6054.png"
+                alt="user"
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+              />
             </div>
+
             <div className="text-left">
               <p className="text-gray-600 text-lg font-medium">
                 70K+ Job opportunities
@@ -45,7 +59,7 @@ const Hero = () => {
             Get more than 5000+ active jobs for both local & globally
           </p>
 
-          {/* Search Bar */}
+          {/* SEARCH BAR */}
           <div className="bg-white rounded-xl p-2 flex flex-col md:flex-row gap-2 shadow-lg border border-gray-200">
             <div className="flex items-center gap-3 px-4 py-3 flex-1 border-r border-gray-200">
               <Search className="w-5 h-5 text-gray-400" />
@@ -55,6 +69,7 @@ const Hero = () => {
                 className="flex-1 outline-none text-gray-900"
               />
             </div>
+
             <div className="flex items-center gap-3 px-4 py-3 flex-1">
               <MapPin className="w-5 h-5 text-gray-400" />
               <input
@@ -63,6 +78,7 @@ const Hero = () => {
                 className="flex-1 outline-none text-gray-900"
               />
             </div>
+
             <Link to="/login">
               <button className="bg-emerald-600 text-white px-8 py-3 rounded-lg hover:bg-emerald-700 transition-colors">
                 Search
@@ -75,18 +91,15 @@ const Hero = () => {
         <div className="mt-12 relative">
           <h2 className="text-2xl text-black text-center mb-8 relative inline-block left-1/2 -translate-x-1/2">
             Popular Search
+
             {/* Animated Magnifying Glass */}
             <div className="absolute -top-2 left-20 z-20 pointer-events-none animate-search-slide">
               <div className="relative w-16 h-16">
-                {/* Magnifying glass circle */}
                 <div className="w-12 h-12 border-3 border-emerald-500 rounded-full relative bg-gradient-to-br from-white/20 to-transparent overflow-hidden">
-                  {/* Multiple shine effects for depth */}
                   <div className="absolute top-1 left-2 w-4 h-4 bg-white rounded-full opacity-40 blur-sm"></div>
                   <div className="absolute top-1.5 left-2.5 w-2 h-2 bg-white rounded-full opacity-80"></div>
-                  {/* Subtle edge highlight */}
-                  <div className="absolute inset-0 rounded-full bg-gradient-to-br from-white/30 via-transparent to-transparent pointer-events-none"></div>
                 </div>
-                {/* Handle */}
+
                 <div
                   className="absolute top-8 left-8 w-8 h-1.5 bg-emerald-500 rounded-full shadow-sm"
                   style={{
@@ -97,6 +110,7 @@ const Hero = () => {
               </div>
             </div>
           </h2>
+
           <div className="flex flex-wrap justify-center gap-3">
             {categories.map((category, index) => (
               <button
@@ -110,6 +124,7 @@ const Hero = () => {
         </div>
       </div>
 
+      {/* ANIMATION STYLES */}
       <style>{`
         @keyframes blob {
           0%, 100% {
@@ -136,21 +151,10 @@ const Hero = () => {
           animation: blob 20s infinite;
         }
 
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-
-        .animation-delay-6000 {
-          animation-delay: 6s;
-        }
-
-        .animation-delay-8000 {
-          animation-delay: 8s;
-        }
+        .animation-delay-2000 { animation-delay: 2s; }
+        .animation-delay-4000 { animation-delay: 4s; }
+        .animation-delay-6000 { animation-delay: 6s; }
+        .animation-delay-8000 { animation-delay: 8s; }
 
         .animate-search-slide {
           animation: search-slide 5s ease-in-out infinite;

@@ -4,6 +4,7 @@ import JobApplicationService from '../services/jobApplication.service.js';
   ENDPOINTS (api/v1/applications)
     POST /
     GET /job/:jobPostingId
+    GET /:applicationId
     PATCH /:applicationId/status
     GET /me
 */
@@ -41,6 +42,28 @@ const getApplicantsByJob = async (req, res) => {
     const responseObj = {
       success: true,
       data: applicants
+    };
+
+    res.status(200).json(responseObj);
+  } catch (err) {
+    res.status(403).json({
+      success: false,
+      message: err.message,
+    });
+  }
+};
+
+// GET /:applicationId
+const getApplicationDetail = async (req, res) => {
+  try {
+    const { applicationId } = req.params;
+    const userId = req.user._id;
+
+    const application = await JobApplicationService.getApplicationDetail(applicationId, userId);
+
+    const responseObj = {
+      success: true,
+      data: application
     };
 
     res.status(200).json(responseObj);
@@ -96,6 +119,7 @@ const getMyApplications = async (req, res) => {
 export {
   applyToJob,
   getApplicantsByJob,
+  getApplicationDetail,
   updateApplicationStatus,
   getMyApplications,
 };

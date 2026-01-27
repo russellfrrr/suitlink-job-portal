@@ -33,12 +33,6 @@ const Navbar = () => {
               About
             </a>
             <a
-              href="#pricing"
-              className="text-gray-700 hover:text-black transition-colors"
-            >
-              Pricing
-            </a>
-            <a
               href="#contact"
               className="text-gray-700 hover:text-black transition-colors"
             >

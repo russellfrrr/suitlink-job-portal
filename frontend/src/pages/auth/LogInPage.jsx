@@ -2,14 +2,14 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService } from "../../services/authService";
 
-// Shared Components
+// Shared Components (keep all existing imports)
 import AuthContainer from "../../components/Auth/shared/AuthContainer";
 import AuthFormContainer from "../../components/Auth/Shared/AuthFormContainer";
 import AuthMarketingSection from "../../components/Auth/Shared/AuthMarketingSection";
 import Logo from "../../components/Auth/Shared/Logo";
 import ErrorMessage from "../../components/Auth/Shared/ErrorMessage";
-import AuthDivider from "../../components/Auth/Shared/AuthDivider";
-import SocialLoginButtons from "../../components/Auth/Shared/SocialLoginButtons";
+// import AuthDivider from "../../components/Auth/Shared/AuthDivider";
+// import SocialLoginButtons from "../../components/Auth/Shared/SocialLoginButtons";
 
 // Page-specific Components
 import LoginHeader from "../../components/Auth/LoginPage/LoginHeader";
@@ -25,7 +25,14 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      await authService.login(email, password);
+      const response = await authService.login(email, password);
+
+      if (!response || !response.success) {
+        setError("Login failed. Please try again.");
+        setLoading(false);
+        return;
+      }
+
       navigate("/dashboard");
     } catch (err) {
       const errorMessage = err.message.toLowerCase();
@@ -97,8 +104,8 @@ const LoginPage = () => {
             </button>
           </div>
 
-          <AuthDivider />
-          <SocialLoginButtons disabled={loading} />
+          {/* <AuthDivider />
+          <SocialLoginButtons disabled={loading} /> */}
         </div>
       </AuthFormContainer>
 
