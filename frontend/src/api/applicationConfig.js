@@ -1,11 +1,12 @@
 import axios from "axios";
-import { ENDPOINTS } from "./api.config";
+
+const API_BASE_URL = "http://localhost:8888/api/v1/applications";
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
 
 const applicationsApi = axios.create({
-  baseURL: ENDPOINTS.APPLICATIONS,
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -20,5 +21,4 @@ applicationsApi.interceptors.response.use(
     throw new Error(message);
   }
 );
-
 export default applicationsApi;

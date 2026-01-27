@@ -1,26 +1,24 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Briefcase, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { authService } from "../../services/authService";
-
-// Shared Components
-import AuthContainer from "../../components/Auth/Shared/AuthContainer";
-import AuthFormContainer from "../../components/Auth/Shared/AuthFormContainer";
-import AuthMarketingSection from "../../components/Auth/Shared/AuthMarketingSection";
-import Logo from "../../components/Auth/Shared/Logo";
-import ErrorMessage from "../../components/Auth/Shared/ErrorMessage";
-import AuthDivider from "../../components/Auth/Shared/AuthDivider";
-import SocialLoginButtons from "../../components/Auth/Shared/SocialLoginButtons";
-
-// Page-specific Components
-import SignUpHeader from "../../components/Auth/SignUpPage/SignUpHeader";
-import SignUpForm from "../../components/Auth/SignUpPage/SignUpForm";
 
 const SignUpPage = () => {
   const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    userType: "jobseeker",
+    agreedToTerms: false,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleSubmit = async (formData) => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError("");
 
     // Validate passwords match
@@ -61,33 +59,37 @@ const SignUpPage = () => {
     }
   };
 
-  const marketingContent = {
-    title: "Join a transparent hiring platform",
-    description:
-      "Whether you're seeking your next opportunity or building your team, experience hiring with complete accountability and structure.",
-    features: [
-      "Smart resume management",
-      "Focused job discovery",
-      "Auditability by design",
-    ],
-    imageUrl:
-      "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop",
-  };
-
   return (
-    <AuthContainer>
-      <AuthFormContainer>
-        <Logo to="/" />
+    <div className="min-h-screen flex flex-col lg:flex-row bg-background">
+      {/* Left Side - Sign Up Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 min-h-screen lg:min-h-0">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <button
+            onClick={() => navigate("/")}
+            className="inline-flex items-center gap-2 mb-8 text-foreground hover:opacity-80 transition-opacity"
+          >
+            <Briefcase className="w-5 h-5" style={{ color: "#047857" }} />
+            <span className="text-base font-normal">SuitLink</span>
+          </button>
 
-        <div className="mt-8">
-          <SignUpHeader />
-          <ErrorMessage message={error} />
-          <SignUpForm onSubmit={handleSubmit} loading={loading} />
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-normal mb-2 text-foreground">
+              Create account
+            </h1>
+            <p className="text-sm text-muted-foreground font-normal">
+              Already have an account?{" "}
+              <button
+                onClick={() => navigate("/login")}
+                className="font-normal hover:opacity-80 transition-opacity underline"
+                style={{ color: "#047857" }}
+              >
+                Sign in
+              </button>
+            </p>
+          </div>
 
-<<<<<<< HEAD
-          <AuthDivider />
-          <SocialLoginButtons disabled={loading} />
-=======
           {/* Error Message */}
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
@@ -367,17 +369,68 @@ const SignUpPage = () => {
               </button>
             </div> */}
           </form>
->>>>>>> b5e597c (fix: remove the social buttons auth)
         </div>
-      </AuthFormContainer>
+      </div>
 
-      <AuthMarketingSection
-        title={marketingContent.title}
-        description={marketingContent.description}
-        features={marketingContent.features}
-        imageUrl={marketingContent.imageUrl}
-      />
-    </AuthContainer>
+      {/* Right Side - Marketing Content */}
+      <div
+        className="hidden lg:flex w-full lg:w-1/2 p-8 lg:p-12 items-center justify-center relative overflow-hidden min-h-[500px] lg:min-h-screen"
+        style={{ backgroundColor: "#065f46" }}
+      >
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30"
+          style={{
+            backgroundImage: `url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop')`,
+          }}
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(6, 95, 70, 0.9) 0%, rgba(4, 47, 46, 0.95) 100%)",
+          }}
+        />
+
+        <div className="relative z-10 max-w-md">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
+            <h3 className="text-2xl font-medium text-white mb-4">
+              Join a transparent hiring platform
+            </h3>
+            <p className="text-white/80 mb-6 leading-relaxed">
+              Whether you're seeking your next opportunity or building your
+              team, experience hiring with complete accountability and
+              structure.
+            </p>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-white/90 text-sm">
+                  Smart resume management
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-white/90 text-sm">
+                  Focused job discovery
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-white/90 text-sm">
+                  Auditability by design
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

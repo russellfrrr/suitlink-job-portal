@@ -1,11 +1,12 @@
 import axios from "axios";
-import { ENDPOINTS } from "../api/api.config";
+
+const API_BASE_URL = "http://localhost:8888/api/v1/applicant";
 
 const applicantProfileService = {
   // Get current applicant profile
   getProfile: async () => {
     try {
-      const response = await axios.get(`${ENDPOINTS.APPLICANT}/profile`, {
+      const response = await axios.get(`${API_BASE_URL}/profile`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",
@@ -23,7 +24,7 @@ const applicantProfileService = {
   createProfile: async (profileData) => {
     try {
       const response = await axios.post(
-        `${ENDPOINTS.APPLICANT}/profile`,
+        `${API_BASE_URL}/profile`,
         profileData,
         {
           withCredentials: true,
@@ -44,7 +45,7 @@ const applicantProfileService = {
   updateProfile: async (profileData) => {
     try {
       const response = await axios.patch(
-        `${ENDPOINTS.APPLICANT}/profile`,
+        `${API_BASE_URL}/profile`,
         profileData,
         {
           withCredentials: true,
@@ -68,7 +69,7 @@ const applicantProfileService = {
       formData.append("avatar", file);
 
       const response = await axios.put(
-        `${ENDPOINTS.APPLICANT}/profile/avatar`,
+        `${API_BASE_URL}/profile/avatar`,
         formData,
         {
           withCredentials: true,
@@ -88,7 +89,7 @@ const applicantProfileService = {
       const formData = new FormData();
       formData.append("resume", file);
 
-      const response = await axios.post(`${ENDPOINTS.APPLICANT}/resume`, formData, {
+      const response = await axios.post(`${API_BASE_URL}/resume`, formData, {
         withCredentials: true,
       });
       return response.data;
@@ -103,7 +104,7 @@ const applicantProfileService = {
   deleteResume: async (resumeId) => {
     try {
       const response = await axios.delete(
-        `${ENDPOINTS.APPLICANT}/resume/${resumeId}`,
+        `${API_BASE_URL}/resume/${resumeId}`,
         {
           withCredentials: true,
           headers: {
@@ -123,7 +124,7 @@ const applicantProfileService = {
   addEducation: async (educationData) => {
     try {
       const response = await axios.post(
-        `${ENDPOINTS.APPLICANT}/education`,
+        `${API_BASE_URL}/education`,
         educationData,
         {
           withCredentials: true,
@@ -143,7 +144,7 @@ const applicantProfileService = {
   updateEducation: async (educationId, educationData) => {
     try {
       const response = await axios.patch(
-        `${ENDPOINTS.APPLICANT}/education/${educationId}`,
+        `${API_BASE_URL}/education/${educationId}`,
         educationData,
         {
           withCredentials: true,
@@ -163,7 +164,7 @@ const applicantProfileService = {
   deleteEducation: async (educationId) => {
     try {
       const response = await axios.delete(
-        `${ENDPOINTS.APPLICANT}/education/${educationId}`,
+        `${API_BASE_URL}/education/${educationId}`,
         {
           withCredentials: true,
           headers: {
@@ -183,7 +184,7 @@ const applicantProfileService = {
   addExperience: async (experienceData) => {
     try {
       const response = await axios.post(
-        `${ENDPOINTS.APPLICANT}/experience`,
+        `${API_BASE_URL}/experience`,
         experienceData,
         {
           withCredentials: true,
@@ -203,7 +204,7 @@ const applicantProfileService = {
   updateExperience: async (experienceId, experienceData) => {
     try {
       const response = await axios.patch(
-        `${ENDPOINTS.APPLICANT}/experience/${experienceId}`,
+        `${API_BASE_URL}/experience/${experienceId}`,
         experienceData,
         {
           withCredentials: true,
@@ -223,7 +224,7 @@ const applicantProfileService = {
   deleteExperience: async (experienceId) => {
     try {
       const response = await axios.delete(
-        `${ENDPOINTS.APPLICANT}/experience/${experienceId}`,
+        `${API_BASE_URL}/experience/${experienceId}`,
         {
           withCredentials: true,
           headers: {

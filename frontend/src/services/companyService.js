@@ -1,9 +1,10 @@
 import axios from "axios";
-import { ENDPOINTS } from "../api/api.config";
+
+const API_BASE_URL = "http://localhost:8888/api/v1/company";
 
 // Create axios instance with credentials
 const companyApi = axios.create({
-  baseURL: ENDPOINTS.COMPANY,
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -35,13 +36,13 @@ export const companyService = {
     return companyApi.patch("/profile", profileData);
   },
 
-  // Upload company logo
+  // Upload company logo -
   uploadLogo: async (file) => {
     const formData = new FormData();
     formData.append("logo", file);
 
     return axios
-      .put(`${ENDPOINTS.COMPANY}/profile/logo`, formData, {
+      .put(`${API_BASE_URL}/profile/logo`, formData, {
         withCredentials: true,
         headers: {
           "Content-Type": "multipart/form-data",
