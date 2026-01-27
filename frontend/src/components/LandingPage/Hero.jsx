@@ -29,17 +29,17 @@ const Hero = () => {
           <div className="inline-flex items-center gap-3">
             <div className="flex -space-x-2">
               <img
-                src="https://images.unsplash.com/photo-1502685104226-ee32379fefbe?auto=format&fit=crop&w=200&q=80"
+                src="https://shared-app-space.sgp1.digitaloceanspaces.com/pps-prod/480-person-malupiton-2025-06-20-001.jpg"
                 alt="user"
                 className="w-10 h-10 rounded-full border-2 border-white object-cover"
               />
               <img
-                src="https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?auto=format&fit=crop&w=200&q=80"
+                src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQNpolMSUu5vOmgyW4HI3Tvl3sT_pwdCL6byQ&s"
                 alt="user"
                 className="w-10 h-10 rounded-full border-2 border-white object-cover"
               />
               <img
-                src="https://images.unsplash.com/photo-1544725176-7c40e5a2c9f9?auto=format&fit=crop&w=200&q=80"
+                src="https://cdn.balita.net.ph/balitta/uploads/images/2024/12/01/6054.png"
                 alt="user"
                 className="w-10 h-10 rounded-full border-2 border-white object-cover"
               />

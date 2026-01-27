@@ -8,8 +8,8 @@ import AuthFormContainer from "../../components/Auth/Shared/AuthFormContainer";
 import AuthMarketingSection from "../../components/Auth/Shared/AuthMarketingSection";
 import Logo from "../../components/Auth/Shared/Logo";
 import ErrorMessage from "../../components/Auth/Shared/ErrorMessage";
-import AuthDivider from "../../components/Auth/Shared/AuthDivider";
-import SocialLoginButtons from "../../components/Auth/Shared/SocialLoginButtons";
+// import AuthDivider from "../../components/Auth/Shared/AuthDivider";
+// import SocialLoginButtons from "../../components/Auth/Shared/SocialLoginButtons";
 
 // Page-specific Components
 import LoginHeader from "../../components/Auth/LoginPage/LoginHeader";
@@ -104,8 +104,8 @@ const LoginPage = () => {
             </button>
           </div>
 
-          <AuthDivider />
-          <SocialLoginButtons disabled={loading} />
+          {/* <AuthDivider />
+          <SocialLoginButtons disabled={loading} /> */}
         </div>
       </AuthFormContainer>
 

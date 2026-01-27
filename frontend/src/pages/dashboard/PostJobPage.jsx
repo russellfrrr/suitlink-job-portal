@@ -80,7 +80,7 @@ const PostJobPage = () => {
                 type="submit"
                 form="post-job-form"
                 disabled={isSubmitting}
-                className="px-4 py-2 bg-chart-1 text-white rounded-lg hover:opacity-90 text-sm disabled:opacity-50"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition text-sm font-medium disabled:opacity-500"
               >
                 {isSubmitting ? "Publishing..." : "Publish Job"}
               </button>
