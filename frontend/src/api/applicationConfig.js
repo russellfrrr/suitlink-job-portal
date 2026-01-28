@@ -1,12 +1,13 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/apiConfig";
 
-const API_BASE_URL = "http://localhost:8888/api/v1/applications";
+const APPLICATION_API_URL = `${API_BASE_URL}/applications`;
 
 // Configure axios defaults
 axios.defaults.withCredentials = true;
 
 const applicationsApi = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: APPLICATION_API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",

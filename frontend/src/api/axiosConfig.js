@@ -1,7 +1,5 @@
 import axios from "axios";
-
-// Generic API base - use env variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8888/api/v1";
+import { API_BASE_URL } from "../config/apiConfig";
 
 // Axios instance with default config for general API calls
 const api = axios.create({

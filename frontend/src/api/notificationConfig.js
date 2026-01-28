@@ -1,9 +1,10 @@
 import axios from "axios";
+import { API_BASE_URL } from "../config/apiConfig";
 
-const API_BASE_URL = "http://localhost:8888/api/v1/notifications";
+const NOTIFICATION_API_URL = `${API_BASE_URL}/notifications`;
 
 const notificationsApi = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: NOTIFICATION_API_URL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
