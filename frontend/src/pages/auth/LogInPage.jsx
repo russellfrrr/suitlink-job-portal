@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { authService } from "../../services/authService";
 
 // Shared Components (keep all existing imports)
-import AuthContainer from "../../components/Auth/shared/AuthContainer";
+import AuthContainer from "../../components/Auth/Shared/AuthContainer";
 import AuthFormContainer from "../../components/Auth/Shared/AuthFormContainer";
 import AuthMarketingSection from "../../components/Auth/Shared/AuthMarketingSection";
 import Logo from "../../components/Auth/Shared/Logo";
@@ -12,7 +12,7 @@ import ErrorMessage from "../../components/Auth/Shared/ErrorMessage";
 // import SocialLoginButtons from "../../components/Auth/Shared/SocialLoginButtons";
 
 // Page-specific Components
-import LoginHeader from "../../components/Auth/LoginPage/LoginHeader";
+import LoginHeader from "../../components/Auth/LogInPage/LoginHeader";
 import LoginForm from "../../components/Auth/LogInPage/LoginForm";
 
 const LoginPage = () => {
