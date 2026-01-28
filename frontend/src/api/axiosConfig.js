@@ -21,7 +21,10 @@ api.interceptors.response.use(
   },
   (error) => {
     const message = error.response?.data?.message || "An error occurred";
-    throw new Error(message);
+    const err = new Error(message);
+    err.status = error.response?.status;
+    err.response = error.response;
+    throw err;
   }
 );
 
