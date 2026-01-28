@@ -1,93 +1,203 @@
-# suitlink-job-portal
+# 👔 SuitLink - Job Portal Application
 
+**SuitLink** is a modern, full-stack job portal web application that connects talented job seekers with innovative companies. Built with React and Node.js, SuitLink provides an intuitive platform for applicants to discover opportunities and for companies to find their perfect candidates.
 
+---
 
-## Getting started
+## 📋 Table of Contents
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Project Structure](#-project-structure)
+- [API Documentation](#-api-documentation)
+- [Contributing](#-contributing)
+- [License](#-license)
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+---
 
-## Add your files
+## Features
 
-* [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+### For Job Seekers
+- Secure user authentication and profile management
+- Create and manage comprehensive applicant profiles
+- Browse and search job postings
+- Submit job applications with resume parsing
+- Real-time notifications for application updates
+- Track application status and history
+
+### For Employers
+- Company profile creation and management
+- Post and manage job openings
+- Review applicant profiles and applications
+- AI-powered resume screening
+- Communicate with candidates
+- Application tracking and management
+
+### General Features
+- Modern, responsive UI with Tailwind CSS
+- JWT-based authentication with HTTP-only cookies
+- Mobile-friendly design
+- Fast and optimized performance
+- Security best practices with Helmet.js
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 19** - UI library
+- **React Router DOM 7** - Client-side routing
+- **Axios** - HTTP client
+- **Tailwind CSS 4** - Utility-first CSS framework
+- **Lucide React** - Icon library
+- **Zod** - Schema validation
+- **Vite** - Build tool and dev server
+
+### Backend
+- **Node.js** - Runtime environment
+- **Express 5** - Web application framework
+- **MongoDB** - NoSQL database
+- **Mongoose** - MongoDB ODM
+- **JWT** - Authentication tokens
+- **Bcrypt** - Password hashing
+- **Multer** - File upload handling
+- **Cloudinary** - Cloud storage for media files
+- **OpenAI** - AI-powered features
+- **Nodemailer** - Email notifications
+- **Helmet** - Security middleware
+- **Morgan** - HTTP request logger
+
+---
+
+## 📁 Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.com/uplift-code-camp/students/batch-27/p6-group-4/suitlink-job-portal.git
-git branch -M main
-git push -uf origin main
+suitlink-job-portal/
+├── frontend/                 # React frontend application
+│   ├── src/
+│   │   ├── api/             # API integration
+│   │   ├── components/      # Reusable UI components
+│   │   ├── context/         # React context providers
+│   │   ├── hooks/           # Custom React hooks
+│   │   ├── pages/           # Page components
+│   │   ├── routes/          # Route definitions
+│   │   ├── services/        # Business logic services
+│   │   ├── App.jsx          # Main app component
+│   │   └── main.jsx         # Entry point
+│   ├── package.json
+│   └── vite.config.js
+│
+└── backend/                  # Node.js backend API
+    ├── config/              # Configuration files
+    ├── controllers/         # Request handlers
+    ├── database/            # Database connection
+    ├── middlewares/         # Custom middleware
+    ├── models/              # Mongoose models
+    ├── routes/              # API routes
+    ├── services/            # Business logic
+    ├── utils/               # Utility functions
+    ├── validators/          # Input validation
+    ├── app.js               # Express app setup
+    ├── server.js            # Server entry point
+    └── package.json
 ```
 
-## Integrate with your tools
+---
 
-* [Set up project integrations](https://gitlab.com/uplift-code-camp/students/batch-27/p6-group-4/suitlink-job-portal/-/settings/integrations)
 
-## Collaborate with your team
+## 📚 API Documentation
 
-* [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+### Base URL
+```
+http://localhost:5000/api/v1
+```
 
-## Test and Deploy
+### Authentication Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/register` | Register new user |
+| POST | `/auth/login` | User login |
+| POST | `/auth/logout` | User logout |
+| GET | `/auth/me` | Get current user |
 
-Use the built-in continuous integration in GitLab.
+### Company Profile Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/company/` | Get all companies |
+| GET | `/company/:id` | Get company by ID |
+| POST | `/company/` | Create company profile |
+| PUT | `/company/:id` | Update company profile |
+| DELETE | `/company/:id` | Delete company profile |
 
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+### Applicant Profile Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/applicant/` | Get all applicants |
+| GET | `/applicant/:id` | Get applicant by ID |
+| POST | `/applicant/` | Create applicant profile |
+| PUT | `/applicant/:id` | Update applicant profile |
+| DELETE | `/applicant/:id` | Delete applicant profile |
 
-***
+### Job Posting Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/jobs/` | Get all job postings |
+| GET | `/jobs/:id` | Get job by ID |
+| POST | `/jobs/` | Create job posting |
+| PUT | `/jobs/:id` | Update job posting |
+| DELETE | `/jobs/:id` | Delete job posting |
 
-# Editing this README
+### Job Application Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/applications/` | Get all applications |
+| GET | `/applications/:id` | Get application by ID |
+| POST | `/applications/` | Submit application |
+| PUT | `/applications/:id` | Update application status |
+| DELETE | `/applications/:id` | Delete application |
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+### Notification Endpoints
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/notifications/` | Get all notifications |
+| GET | `/notifications/:id` | Get notification by ID |
+| PUT | `/notifications/:id/read` | Mark notification as read |
+| DELETE | `/notifications/:id` | Delete notification |
 
-## Suggestions for a good README
+---
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+## 🤝 Contributing
 
-## Name
-Choose a self-explaining name for your project.
+We welcome contributions! Please follow these steps:
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Merge Request
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+---
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+## 📄 License
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+This project is licensed under the ISC License.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+---
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+## 👥 Team
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+Developed by **The Semicolons**
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
+**Russell Ferrero** - Backend / System Design  
+**Jericho Gabarda** - Frontend/ UI/UX Design  
+**Jerwin Relacion** - Agile Coordinator
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+---
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+## 📞 Support
 
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
+For support, please open an issue in the GitLab repository or contact the development team.
 
-## License
-For open source projects, say how it is licensed.
+---
 
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+**Happy Hiring! 👔**
