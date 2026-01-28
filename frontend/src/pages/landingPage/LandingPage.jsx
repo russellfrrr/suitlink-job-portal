@@ -1,12 +1,12 @@
 import React from "react";
-import Navbar from "../../components/landingPage/Navbar";
-import Hero from "../../components/landingPage/Hero";
-import TrustedCompanies from "../../components/landingPage/TrustedCompanies";
-import JobSeekersEmployers from "../../components/landingPage/JobSeekersEmployers";
-import About from "../../components/landingPage/About";
-import CTA from "../../components/landingPage/CTA";
-import Contact from "../../components/landingPage/Contact";
-import Footer from "../../components/landingPage/Footer";
+import Navbar from "../../components/LandingPage/Navbar";
+import Hero from "../../components/LandingPage/Hero";
+import TrustedCompanies from "../../components/LandingPage/TrustedCompanies";
+import JobSeekersEmployers from "../../components/LandingPage/JobSeekersEmployers";
+import About from "../../components/LandingPage/About";
+import CTA from "../../components/LandingPage/CTA";
+import Contact from "../../components/LandingPage/Contact";
+import Footer from "../../components/LandingPage/Footer";
 
 const LandingPage = () => {
   return (
