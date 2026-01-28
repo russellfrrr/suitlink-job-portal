@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { UnifiedProfileProvider } from "./context/ProfileContext";
-import LoginPage from "./pages/auth/LoginPage";
+import LoginPage from "./pages/auth/LogInPage";
 import SignUpPage from "./pages/auth/SignUpPage";
 import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 import VerifyEmailSuccessPage from "./pages/auth/VerifyEmailSuccessPage";
