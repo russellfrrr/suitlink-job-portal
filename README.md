@@ -50,7 +50,6 @@
 - **Axios** - HTTP client
 - **Tailwind CSS 4** - Utility-first CSS framework
 - **Lucide React** - Icon library
-- **Zod** - Schema validation
 - **Vite** - Build tool and dev server
 
 ### Backend
@@ -59,6 +58,7 @@
 - **MongoDB** - NoSQL database
 - **Mongoose** - MongoDB ODM
 - **JWT** - Authentication tokens
+- **Zod** - Schema validation
 - **Bcrypt** - Password hashing
 - **Multer** - File upload handling
 - **Cloudinary** - Cloud storage for media files
